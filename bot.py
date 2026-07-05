@@ -9,7 +9,10 @@ intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
-# 4-digit room codes
+# -----------------------------
+# DATA
+# -----------------------------
+
 ROOM_CODES = {
     "Room 1": "4829",
     "Room 2": "7314",
@@ -17,7 +20,6 @@ ROOM_CODES = {
     "Room 4": "8501"
 }
 
-# Weighted chances (Room 1 common → Room 4 rare)
 ROOM_WEIGHTS = {
     "Room 1": 55,
     "Room 2": 25,
@@ -25,6 +27,11 @@ ROOM_WEIGHTS = {
     "Room 4": 5
 }
 
+# currency storage
+user_currency = {}
+# -----------------------------
+# GACHA BUTTON
+# -----------------------------
 
 class GachaView(discord.ui.View):
     def __init__(self):
@@ -32,6 +39,17 @@ class GachaView(discord.ui.View):
 
     @discord.ui.button(label="🎰 Roll Nanagacha", style=discord.ButtonStyle.primary)
     async def roll(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        user_id = interaction.user.id
+
+        if user_currency.get(user_id, 0) < 1:
+            await interaction.response.send_message(
+                "❌ Not enough coins. Use /daily.",
+                ephemeral=True
+            )
+            return
+
+        user_currency[user_id] -= 1
 
         await interaction.response.defer(ephemeral=True)
 
@@ -55,23 +73,50 @@ class GachaView(discord.ui.View):
 
         except:
             await interaction.followup.send(
-                "I could not DM you. Please enable DMs from server members.",
+                "I could not DM you. Enable DMs from server members.",
                 ephemeral=True
             )
-
+            # -----------------------------
+# COMMANDS
+# -----------------------------
 
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
     await interaction.response.send_message(
-        "🎰 Nanachi's Gacha is ready.",
+        "🎰 Nanagacha is ready. Roll if you have coins.",
         view=GachaView()
     )
 
+
+@tree.command(name="daily", description="Claim daily coins")
+async def daily(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    user_currency[user_id] = user_currency.get(user_id, 0) + 10
+
+    await interaction.response.send_message(
+        "💰 You claimed 10 coins.",
+        ephemeral=True
+    )
+
+
+@tree.command(name="givecoins", description="Admin: give coins")
+async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
+
+    user_currency[user.id] = user_currency.get(user.id, 0) + amount
+
+    await interaction.response.send_message(
+        f"Given {amount} coins to {user.mention}",
+        ephemeral=True
+    )
+
+
+# -----------------------------
+# READY + RUN
+# -----------------------------
 
 @client.event
 async def on_ready():
     await tree.sync()
     print(f"Logged in as {client.user}")
-
 
 client.run(TOKEN)
