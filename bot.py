@@ -83,7 +83,7 @@ class GachaView(discord.ui.View):
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
     await interaction.response.send_message(
-        "🎰 Nanagacha is ready. Roll if you have coins.",
+        "🎰 Nanagacha is ready. Roll if you have Nanacoins.",
         view=GachaView()
     )
 
@@ -95,7 +95,7 @@ daily_claims = {}
 COOLDOWN = 86400  # 24 hours
 
 
-@tree.command(name="daily", description="Claim your daily ticket")
+@tree.command(name="daily", description="Claim your daily Nanacoin")
 async def daily(interaction: discord.Interaction):
 
     user_id = interaction.user.id
@@ -119,7 +119,7 @@ async def daily(interaction: discord.Interaction):
     user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
-        "🎟️ You claimed your daily ticket (1).",
+        "🎟️ You claimed your daily Nanacoin (1).",
         ephemeral=True
     )
 
@@ -131,6 +131,17 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
 
     await interaction.response.send_message(
         f"Given {amount} coins to {user.mention}",
+        ephemeral=True
+    )
+
+@tree.command(name="balance", description="Check Nanacoin balance")
+async def balance(interaction: discord.Interaction):
+
+    user_id = interaction.user.id
+    amount = user_currency.get(user_id, 0)
+
+    await interaction.response.send_message(
+        f"🪙 You have **{amount} Nanacoins**.",
         ephemeral=True
     )
 
