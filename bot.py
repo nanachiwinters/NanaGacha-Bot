@@ -91,7 +91,7 @@ async def nanagacha(interaction: discord.Interaction):
 @tree.command(name="daily", description="Claim daily coins")
 async def daily(interaction: discord.Interaction):
     user_id = interaction.user.id
-    user_currency[user_id] = user_currency.get(user_id, 0) + 10
+    user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
         "💰 You claimed 10 coins.",
