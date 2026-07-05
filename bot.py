@@ -76,40 +76,65 @@ class GachaView(discord.ui.View):
                 "I could not DM you. Enable DMs from server members.",
                 ephemeral=True
             )
-
-
-# -----------------------------
+            # -----------------------------
 # COMMANDS
 # -----------------------------
 
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
-    ...
+    await interaction.response.send_message(
+        "🎰 Nanagacha is ready. Roll if you have coins.",
+        view=GachaView()
+    )
 
-@tree.command(name="daily", description="Claim daily coins")
+
+import time
+
+daily_claims = {}
+
+COOLDOWN = 86400  # 24 hours
+
+
+@tree.command(name="daily", description="Claim your daily ticket")
 async def daily(interaction: discord.Interaction):
-    ...
-
-@tree.command(name="balance", description="Check your NanaCoin balance")
-async def balance(interaction: discord.Interaction):
 
     user_id = interaction.user.id
-    amount = user_currency.get(user_id, 0)
+    now = time.time()
+
+    last_claim = daily_claims.get(user_id, 0)
+
+    if now - last_claim < COOLDOWN:
+        remaining = int(COOLDOWN - (now - last_claim))
+        hours = remaining // 3600
+        minutes = (remaining % 3600) // 60
+
+        await interaction.response.send_message(
+            f"⏳ You already claimed your daily.\nTry again in {hours}h {minutes}m.",
+            ephemeral=True
+        )
+        return
+
+    daily_claims[user_id] = now
+
+    user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
-        f"🫧 You have {amount} NanaCoins.",
+        "🎟️ You claimed your daily ticket (1).",
         ephemeral=True
     )
 
+
 @tree.command(name="givecoins", description="Admin: give coins")
 async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
-    
+
     user_currency[user.id] = user_currency.get(user.id, 0) + amount
 
     await interaction.response.send_message(
         f"Given {amount} coins to {user.mention}",
         ephemeral=True
     )
+
+
 # -----------------------------
 # READY + RUN
 # -----------------------------
@@ -120,3 +145,5 @@ async def on_ready():
     print(f"Logged in as {client.user}")
 
 client.run(TOKEN)
+
+
