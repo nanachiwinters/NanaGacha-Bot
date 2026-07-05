@@ -25,11 +25,20 @@ class GachaView(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
 
-        result_type = random.randint(1, 100)
+        rooms = {
+    "Room 1": 55,
+    "Room 2": 25,
+    "Room 3": 15,
+    "Room 4": 5
+}
 
-        if result_type <= 10:
-            room = random.choice(list(ROOM_CODES.keys()))
-            code = ROOM_CODES[room]
+room = random.choices(
+    list(rooms.keys()),
+    weights=list(rooms.values()),
+    k=1
+)[0]
+
+code = ROOM_CODES[room]
 
             try:
                 await interaction.user.send(
