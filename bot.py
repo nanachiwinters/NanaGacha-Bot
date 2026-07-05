@@ -116,7 +116,7 @@ async def daily(interaction: discord.Interaction):
 
     daily_claims[user_id] = now
 
-    user_currency[user_id] = 1
+    user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
         "🎟️ You claimed your daily ticket (1).",
