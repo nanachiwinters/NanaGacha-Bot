@@ -81,6 +81,7 @@ class GachaView(discord.ui.View):
 # -----------------------------
 # COMMANDS
 # -----------------------------
+
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
     ...
