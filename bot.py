@@ -77,56 +77,29 @@ class GachaView(discord.ui.View):
                 ephemeral=True
             )
             # -----------------------------
-# COMMANDS
-# -----------------------------
-
+COMMANDS
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
-    await interaction.response.send_message(
-        "🎰 Nanagacha is ready. Roll if you have coins.",
-        view=GachaView()
-    )
+    ...
 
-
-import time
-
-daily_claims = {}
-
-COOLDOWN = 86400  # 24 hours
-
-
-@tree.command(name="daily", description="Claim your daily ticket")
+@tree.command(name="daily", description="Claim daily coins")
 async def daily(interaction: discord.Interaction):
+    ...
+
+@tree.command(name="balance", description="Check your Nanaecho balance")
+async def balance(interaction: discord.Interaction):
 
     user_id = interaction.user.id
-    now = time.time()
-
-    last_claim = daily_claims.get(user_id, 0)
-
-    if now - last_claim < COOLDOWN:
-        remaining = int(COOLDOWN - (now - last_claim))
-        hours = remaining // 3600
-        minutes = (remaining % 3600) // 60
-
-        await interaction.response.send_message(
-            f"⏳ You already claimed your daily.\nTry again in {hours}h {minutes}m.",
-            ephemeral=True
-        )
-        return
-
-    daily_claims[user_id] = now
-
-    user_currency[user_id] = user_currency.get(user_id, 0) + 1
+    amount = user_currency.get(user_id, 0)
 
     await interaction.response.send_message(
-        "🎟️ You claimed your daily ticket (1).",
+        f"🫧 You have {amount} Nanaecho.",
         ephemeral=True
     )
 
-
 @tree.command(name="givecoins", description="Admin: give coins")
 async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
-
+    
     user_currency[user.id] = user_currency.get(user.id, 0) + amount
 
     await interaction.response.send_message(
