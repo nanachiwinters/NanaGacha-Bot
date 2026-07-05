@@ -124,13 +124,33 @@ async def daily(interaction: discord.Interaction):
     )
 
 
+ALLOWED_ROLE_ID = 1517330293101564036  # Replace with your role ID
+
 @tree.command(name="givecoins", description="Admin: give coins")
-async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
+async def givecoins(
+    interaction: discord.Interaction,
+    user: discord.Member,
+    amount: int
+):
+
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "This command can only be used in a server.",
+            ephemeral=True
+        )
+        return
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message(
+            "❌ You don't have permission to use this command.",
+            ephemeral=True
+        )
+        return
 
     user_currency[user.id] = user_currency.get(user.id, 0) + amount
 
     await interaction.response.send_message(
-        f"Given {amount} coins to {user.mention}",
+        f"✅ Gave {amount} Nanacoins to {user.mention}.",
         ephemeral=True
     )
 
