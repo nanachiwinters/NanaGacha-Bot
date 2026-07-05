@@ -86,14 +86,14 @@ async def nanagacha(interaction: discord.Interaction):
 async def daily(interaction: discord.Interaction):
     ...
 
-@tree.command(name="balance", description="Check your Nanaecho balance")
+@tree.command(name="balance", description="Check your NanaCoin balance")
 async def balance(interaction: discord.Interaction):
 
     user_id = interaction.user.id
     amount = user_currency.get(user_id, 0)
 
     await interaction.response.send_message(
-        f"🫧 You have {amount} Nanaecho.",
+        f"🫧 You have {amount} NanaCoins.",
         ephemeral=True
     )
 
