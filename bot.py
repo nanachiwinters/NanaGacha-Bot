@@ -76,9 +76,11 @@ class GachaView(discord.ui.View):
                 "I could not DM you. Enable DMs from server members.",
                 ephemeral=True
             )
-            # -----------------------------
 
-COMMANDS
+
+# -----------------------------
+# COMMANDS
+# -----------------------------
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
     ...
@@ -107,8 +109,6 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
         f"Given {amount} coins to {user.mention}",
         ephemeral=True
     )
-
-
 # -----------------------------
 # READY + RUN
 # -----------------------------
