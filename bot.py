@@ -88,13 +88,38 @@ async def nanagacha(interaction: discord.Interaction):
     )
 
 
-@tree.command(name="daily", description="Claim daily coins")
+import time
+
+daily_claims = {}
+
+COOLDOWN = 86400  # 24 hours
+
+
+@tree.command(name="daily", description="Claim your daily ticket")
 async def daily(interaction: discord.Interaction):
+
     user_id = interaction.user.id
-    user_currency[user_id] = user_currency.get(user_id, 0) + 1
+    now = time.time()
+
+    last_claim = daily_claims.get(user_id, 0)
+
+    if now - last_claim < COOLDOWN:
+        remaining = int(COOLDOWN - (now - last_claim))
+        hours = remaining // 3600
+        minutes = (remaining % 3600) // 60
+
+        await interaction.response.send_message(
+            f"⏳ You already claimed your daily.\nTry again in {hours}h {minutes}m.",
+            ephemeral=True
+        )
+        return
+
+    daily_claims[user_id] = now
+
+    user_currency[user_id] = 1
 
     await interaction.response.send_message(
-        "💰 You claimed 1 coins.",
+        "🎟️ You claimed your daily ticket (1).",
         ephemeral=True
     )
 
