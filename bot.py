@@ -94,7 +94,7 @@ async def daily(interaction: discord.Interaction):
     user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
-        "💰 You claimed 10 coins.",
+        "💰 You claimed 1 coins.",
         ephemeral=True
     )
 
