@@ -610,10 +610,10 @@ class AdminView(discord.ui.View):
             color=0x2ecc71
         )
 
-    await interaction.response.edit_message(
-        embed=embed,
-        view=EconomyMenuView()
-    )
+        await interaction.response.edit_message(
+            embed=embed,
+            view=EconomyMenuView()
+        )
 
     @discord.ui.button(label="🟢 Open", style=discord.ButtonStyle.secondary)
     async def open_button(self, interaction: discord.Interaction, button: discord.ui.Button):
