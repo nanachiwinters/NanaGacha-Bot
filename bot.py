@@ -107,46 +107,46 @@ class GachaView(discord.ui.View):
 
     async def spin(self, interaction, lucky=False):
 
-        await interaction.response.send_message("🎡 Spinning...", ephemeral=True)
-        msg = await interaction.original_response()
+    await interaction.response.send_message("🎡 Spinning...", ephemeral=True)
+    msg = await interaction.original_response()
 
-        frames = [
-            "🎡 Spinning",
-            "🎡 Spinning.",
-            "🎡 Spinning..",
-            "🎡 Spinning..."
-        ]
+    frames = [
+        "🎡 Spinning",
+        "🎡 Spinning.",
+        "🎡 Spinning..",
+        "🎡 Spinning..."
+    ]
 
-        # faster + smoother animation
-        for _ in range(2):
-            for f in frames:
-                await msg.edit(content=f)
-                await asyncio.sleep(0.12)
+    # 🎡 animation
+    for _ in range(2):
+        for f in frames:
+            await msg.edit(content=f)
+            await asyncio.sleep(0.12)
 
-      if lucky:
-    pool = [r for r in rooms if rooms[r].get("lucky") is True]
-else:
-    pool = [r for r in rooms if not rooms[r].get("lucky", False)]
+    # 🎯 pool selection
+    if lucky:
+        pool = [r for r in rooms if rooms[r].get("lucky") is True]
+    else:
+        pool = [r for r in rooms if not rooms[r].get("lucky", False)]
 
-        room = random.choices(
-            pool,
-            weights=[rooms[r]["weight"] for r in pool],
-            k=1
-        )[0]
+    room = random.choices(
+        pool,
+        weights=[rooms[r]["weight"] for r in pool],
+        k=1
+    )[0]
 
-        data = rooms[room]
-        rarity = data.get("rarity", "Common")
-        code = data["code"]
+    data = rooms[room]
+    rarity = data.get("rarity", "Common")
+    code = data["code"]
 
-        embed = discord.Embed(
-            title=f"{RARITY_EMOJI.get(rarity)} {rarity.upper()} ROLL",
-            description=f"**{room}**\n🔑 Code: `{code}`",
-            color=RARITY_COLORS.get(rarity, 0x3498db)
-        )
+    embed = discord.Embed(
+        title=f"{rarity} ROLL",
+        description=f"{room}\nCode: {code}",
+        color=0x3498db
+    )
 
-        await interaction.user.send(embed=embed)
-        await msg.edit(content="📩 Check your DMs!")
-
+    await interaction.user.send(embed=embed)
+    await msg.edit(content="📩 Check your DMs!")
 # -----------------------------
 # NANAGACHA
 # -----------------------------
