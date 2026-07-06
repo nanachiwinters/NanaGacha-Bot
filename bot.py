@@ -329,7 +329,69 @@ async def balance(interaction: discord.Interaction):
         f"🪙 {user_currency.get(uid, 0)} coins",
         ephemeral=True
     )
+    
+# -----------------------------
+# ROOM MENU
+# -----------------------------
 
+class RoomMenuView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
+    @discord.ui.button(label="🏠 Normal Rooms", style=discord.ButtonStyle.primary)
+    async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Normal Rooms editor coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="🍀 Lucky Rooms", style=discord.ButtonStyle.success)
+    async def lucky_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Lucky Rooms editor coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="📋 List Rooms", style=discord.ButtonStyle.secondary)
+    async def list_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="📋 Room List",
+            color=0x3498db
+        )
+
+        for room, data in rooms.items():
+            lucky = " 🍀" if data.get("lucky") else ""
+            embed.add_field(
+                name=f"{room}{lucky}",
+                value=(
+                    f"🔑 `{data['code']}`\n"
+                    f"⭐ {data['rarity']}\n"
+                    f"⚖️ Weight: {data['weight']}"
+                ),
+                inline=False
+            )
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @discord.ui.button(label="◀ Back", style=discord.ButtonStyle.danger)
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        status = "🟢 OPENED" if gacha_open else "🔴 CLOSED"
+
+        embed = discord.Embed(
+            title="🛠️ NanaGacha Admin Panel",
+            description=f"**Gacha Status:** {status}",
+            color=0x5865F2
+        )
+
+        embed.set_footer(text="Select an option below.")
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=AdminView()
+        )
+        
 # -----------------------------
 # ADMIN PANEL
 # -----------------------------
@@ -339,11 +401,18 @@ class AdminView(discord.ui.View):
         super().__init__(timeout=300)
 
     @discord.ui.button(label="🔑 Rooms", style=discord.ButtonStyle.primary)
-    async def rooms_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Rooms menu coming next!",
-            ephemeral=True
-        )
+async def rooms_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+    embed = discord.Embed(
+        title="🏠 Room Management",
+        description="Choose an option below.",
+        color=0x3498db
+    )
+
+    await interaction.response.edit_message(
+        embed=embed,
+        view=RoomMenuView()
+    )
 
     @discord.ui.button(label="💰 Economy", style=discord.ButtonStyle.success)
     async def economy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
