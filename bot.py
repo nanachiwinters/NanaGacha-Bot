@@ -400,19 +400,19 @@ class AdminView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=300)
 
-   @discord.ui.button(label="🔑 Rooms", style=discord.ButtonStyle.primary)
-async def rooms_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="🔑 Rooms", style=discord.ButtonStyle.primary)
+    async def rooms_button(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-    embed = discord.Embed(
-        title="🏠 Room Management",
-        description="Choose an option below.",
-        color=0x3498db
-    )
+        embed = discord.Embed(
+            title="🏠 Room Management",
+            description="Choose an option below.",
+            color=0x3498db
+        )
 
-    await interaction.response.edit_message(
-        embed=embed,
-        view=RoomMenuView()
-    )
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RoomMenuView()
+        )
 
     @discord.ui.button(label="💰 Economy", style=discord.ButtonStyle.success)
     async def economy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
