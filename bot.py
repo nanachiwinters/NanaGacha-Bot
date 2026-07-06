@@ -9,6 +9,8 @@ import asyncio
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
+intents.message_content = True  # needed for waiting for code input
+
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
@@ -78,11 +80,8 @@ class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    # NORMAL
     @discord.ui.button(label="🎰 Normal (1)", style=discord.ButtonStyle.primary)
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        global gacha_open
 
         uid = str(interaction.user.id)
 
@@ -99,11 +98,8 @@ class GachaView(discord.ui.View):
 
         await self.spin(interaction, lucky=False)
 
-    # LUCKY
     @discord.ui.button(label="🍀 Lucky (3)", style=discord.ButtonStyle.success)
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        global gacha_open
 
         uid = str(interaction.user.id)
 
@@ -119,10 +115,6 @@ class GachaView(discord.ui.View):
         save_coins(user_currency)
 
         await self.spin(interaction, lucky=True)
-
-    # -----------------------------
-    # SLOT SPIN
-    # -----------------------------
 
     async def spin(self, interaction, lucky=False):
 
@@ -167,7 +159,101 @@ class GachaView(discord.ui.View):
             await msg.edit(content="❌ Could not DM you")
 
 # -----------------------------
-# NANAGACHA
+# SET CODE SYSTEM (DROPDOWN)
+# -----------------------------
+
+class SetCodeSelect(discord.ui.Select):
+    def __init__(self, rooms_data):
+
+        options = [
+            discord.SelectOption(
+                label=room,
+                description=f"Current: {rooms_data[room].get('code', 'None')}"
+            )
+            for room in rooms_data.keys()
+        ]
+
+        super().__init__(
+            placeholder="Choose a room...",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+        self.rooms_data = rooms_data
+
+    async def callback(self, interaction: discord.Interaction):
+
+        room = self.values[0]
+
+        await interaction.response.send_message(
+            f"🔑 Selected **{room}**\nNow type the new code in chat.",
+            ephemeral=True
+        )
+
+        def check(m):
+            return (
+                m.author.id == interaction.user.id and
+                m.channel.id == interaction.channel.id
+            )
+
+        try:
+            msg = await client.wait_for("message", check=check, timeout=60)
+            new_code = msg.content.strip()
+
+# must be exactly 4 digits
+if not new_code.isdigit() or len(new_code) != 4:
+    await interaction.followup.send(
+        "❌ Code must be exactly a 4-digit number (0000–9999).",
+        ephemeral=True
+    )
+    return
+
+rooms[room]["code"] = new_code
+save_rooms(rooms)
+
+await interaction.followup.send(
+    f"✅ Updated `{room}` code to `{new_code}`",
+    ephemeral=True
+)
+
+            await interaction.followup.send(
+                f"✅ Updated `{room}` code to `{new_code}`",
+                ephemeral=True
+            )
+
+        except asyncio.TimeoutError:
+            await interaction.followup.send("⏳ Timed out.", ephemeral=True)
+
+
+class SetCodeView(discord.ui.View):
+    def __init__(self, rooms_data):
+        super().__init__(timeout=60)
+        self.add_item(SetCodeSelect(rooms_data))
+
+# -----------------------------
+# COMMANDS
+# -----------------------------
+
+@tree.command(name="setcode", description="Change a room passcode")
+async def setcode(interaction: discord.Interaction):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message("❌ No permission", ephemeral=True)
+        return
+
+    if not rooms:
+        await interaction.response.send_message("❌ No rooms found", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        "Select a room to edit:",
+        view=SetCodeView(rooms),
+        ephemeral=True
+    )
+
+# -----------------------------
+# OTHER COMMANDS (UNCHANGED)
 # -----------------------------
 
 @tree.command(name="nanagacha", description="Play Nanagacha")
@@ -176,18 +262,12 @@ async def nanagacha(interaction: discord.Interaction):
     status = "🟢 OPEN" if gacha_open else "🔴 CLOSED"
 
     embed = discord.Embed(
-        title="🎰 NANAGACHA",
-        description=f"Click a button below to roll!\n\nStatus: {status}",
+        title="🎰 NanaGacha",
+        description=f"Click below to roll!\n\nStatus: {status}",
         color=0x3498db
     )
 
-    embed.set_footer(text="Normal = 1 coin | Lucky = 3 coins")
-
     await interaction.response.send_message(embed=embed, view=GachaView())
-
-# -----------------------------
-# DAILY
-# -----------------------------
 
 @tree.command(name="daily", description="Claim coins")
 async def daily(interaction: discord.Interaction):
@@ -204,11 +284,7 @@ async def daily(interaction: discord.Interaction):
     user_currency[uid] = user_currency.get(uid, 0) + 1
     save_coins(user_currency)
 
-    await interaction.response.send_message("🎟️ +1 coin", ephemeral=True)
-
-# -----------------------------
-# LEADERBOARD
-# -----------------------------
+    await interaction.response.send_message("🪙 +1 coin", ephemeral=True)
 
 @tree.command(name="leaderboard", description="Top players")
 async def leaderboard(interaction: discord.Interaction):
@@ -227,10 +303,6 @@ async def leaderboard(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
 
-# -----------------------------
-# GIVE COINS
-# -----------------------------
-
 @tree.command(name="givecoins", description="Admin give coins")
 async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
 
@@ -244,11 +316,7 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
 
     await interaction.response.send_message("✅ Done", ephemeral=True)
 
-# -----------------------------
-# OPEN / CLOSE GACHA
-# -----------------------------
-
-@tree.command(name="open_gacha", description="Open gacha shop")
+@tree.command(name="open_gacha", description="Open gacha")
 async def open_gacha(interaction: discord.Interaction):
 
     global gacha_open
@@ -258,9 +326,9 @@ async def open_gacha(interaction: discord.Interaction):
         return
 
     gacha_open = True
-    await interaction.response.send_message("🟢 Gacha OPEN")
+    await interaction.response.send_message("🟢 Gacha OPENED")
 
-@tree.command(name="close_gacha", description="Close gacha shop")
+@tree.command(name="close_gacha", description="Close gacha")
 async def close_gacha(interaction: discord.Interaction):
 
     global gacha_open
@@ -271,10 +339,6 @@ async def close_gacha(interaction: discord.Interaction):
 
     gacha_open = False
     await interaction.response.send_message("🔴 Gacha CLOSED")
-
-# -----------------------------
-# BALANCE
-# -----------------------------
 
 @tree.command(name="balance", description="Check coins")
 async def balance(interaction: discord.Interaction):
