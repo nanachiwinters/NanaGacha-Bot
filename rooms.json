@@ -1,0 +1,18 @@
+{
+    "Room 1": {
+        "code": "4829",
+        "weight": 55
+    },
+    "Room 2": {
+        "code": "7314",
+        "weight": 25
+    },
+    "Room 3": {
+        "code": "1962",
+        "weight": 15
+    },
+    "Room 4": {
+        "code": "8501",
+        "weight": 5
+    }
+}
