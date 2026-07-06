@@ -647,6 +647,65 @@ class RemoveCoinsModal(discord.ui.Modal, title="➖ Remove Coins"):
         )
         
 # -----------------------------
+# SET COINS MODAL
+# -----------------------------
+
+class SetCoinsModal(discord.ui.Modal, title="💎 Set Coins"):
+
+    user_id = discord.ui.TextInput(
+        label="User ID",
+        placeholder="Enter the user's Discord ID",
+        required=True
+    )
+
+    amount = discord.ui.TextInput(
+        label="New Balance",
+        placeholder="Enter the new coin balance",
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        try:
+            user = await client.fetch_user(int(self.user_id.value))
+        except:
+            await interaction.response.send_message(
+                "❌ Invalid User ID.",
+                ephemeral=True
+            )
+            return
+
+        try:
+            amount = int(self.amount.value)
+        except:
+            await interaction.response.send_message(
+                "❌ Amount must be a number.",
+                ephemeral=True
+            )
+            return
+
+        if amount < 0:
+            amount = 0
+
+        uid = str(user.id)
+
+        user_currency[uid] = amount
+        save_coins(user_currency)
+
+        embed = discord.Embed(
+            title="💎 Coins Set",
+            color=0x3498db
+        )
+
+        embed.add_field(name="User", value=user.mention, inline=False)
+        embed.add_field(name="New Balance", value=f"🪙 {amount}", inline=False)
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+        
+# -----------------------------
 # ECONOMY MENU
 # -----------------------------
 
@@ -668,11 +727,11 @@ class EconomyMenuView(discord.ui.View):
             RemoveCoinsModal()
         )
 
-    @discord.ui.button(label="✏️ Set Coins", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="💎 Set Coins", style=discord.ButtonStyle.primary)
     async def setcoins(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Set Coins coming next!",
-            ephemeral=True
+
+        await interaction.response.send_modal(
+            SetCoinsModal()
         )
 
     @discord.ui.button(label="👛 View Balance", style=discord.ButtonStyle.secondary)
@@ -736,18 +795,44 @@ class AdminView(discord.ui.View):
             view=EconomyMenuView()
         )
 
-    @discord.ui.button(label="🟢 Open", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="🟢 Open", style=discord.ButtonStyle.success)
     async def open_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Open button coming next!",
-            ephemeral=True
+
+        global gacha_open
+
+        gacha_open = True
+
+        embed = discord.Embed(
+            title="🛠️ NanaGacha Admin Panel",
+            description="**Gacha Status:** 🟢 OPENED",
+            color=0x2ecc71
         )
 
-    @discord.ui.button(label="🔴 Close", style=discord.ButtonStyle.secondary)
+        embed.set_footer(text="Select an option below.")
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=AdminView()
+        )
+
+    @discord.ui.button(label="🔴 Close", style=discord.ButtonStyle.danger)
     async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Close button coming next!",
-            ephemeral=True
+
+        global gacha_open
+
+        gacha_open = False
+
+        embed = discord.Embed(
+            title="🛠️ NanaGacha Admin Panel",
+            description="**Gacha Status:** 🔴 CLOSED",
+            color=0xe74c3c
+        )
+
+        embed.set_footer(text="Select an option below.")
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=AdminView()
         )
 
     @discord.ui.button(label="❌ Close Panel", style=discord.ButtonStyle.danger, row=1)
