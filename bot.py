@@ -706,6 +706,54 @@ class SetCoinsModal(discord.ui.Modal, title="💎 Set Coins"):
         )
         
 # -----------------------------
+# VIEW BALANCE MODAL
+# -----------------------------
+
+class ViewBalanceModal(discord.ui.Modal, title="👛 View Balance"):
+
+    user_id = discord.ui.TextInput(
+        label="User ID",
+        placeholder="Enter the user's Discord ID",
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        try:
+            user = await client.fetch_user(int(self.user_id.value))
+        except:
+            await interaction.response.send_message(
+                "❌ Invalid User ID.",
+                ephemeral=True
+            )
+            return
+
+        uid = str(user.id)
+        balance = user_currency.get(uid, 0)
+
+        embed = discord.Embed(
+            title="👛 User Balance",
+            color=0xf1c40f
+        )
+
+        embed.add_field(
+            name="User",
+            value=user.mention,
+            inline=False
+        )
+
+        embed.add_field(
+            name="Balance",
+            value=f"🪙 {balance} coins",
+            inline=False
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+        
+# -----------------------------
 # ECONOMY MENU
 # -----------------------------
 
@@ -736,9 +784,9 @@ class EconomyMenuView(discord.ui.View):
 
     @discord.ui.button(label="👛 View Balance", style=discord.ButtonStyle.secondary)
     async def balance(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 View Balance coming next!",
-            ephemeral=True
+
+        await interaction.response.send_modal(
+            ViewBalanceModal()
         )
 
     @discord.ui.button(label="◀ Back", style=discord.ButtonStyle.danger, row=1)
