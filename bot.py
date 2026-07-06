@@ -408,8 +408,8 @@ class RoomMenuView(discord.ui.View):
     @discord.ui.button(label="🏠 Normal Rooms", style=discord.ButtonStyle.primary)
     async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-    await interaction.response.send_modal(
-        NormalRoomsModal()
+        await interaction.response.send_modal(
+            NormalRoomsModal()
     )
 
     @discord.ui.button(label="🍀 Lucky Rooms", style=discord.ButtonStyle.success)
