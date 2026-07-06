@@ -43,15 +43,17 @@ def save_coins(data):
 user_currency = load_coins()
 
 # -----------------------------
-# DATA
+# SETTINGS
 # -----------------------------
 
 daily_claims = {}
 COOLDOWN = 86400
 ALLOWED_ROLE_ID = 1517330293101564036
 
+gacha_open = True
+
 # -----------------------------
-# RARITY SYSTEM
+# RARITY
 # -----------------------------
 
 RARITY_COLORS = {
@@ -69,20 +71,27 @@ RARITY_EMOJI = {
 }
 
 # -----------------------------
-# GACHA
+# GACHA SYSTEM
 # -----------------------------
 
 class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
+    # NORMAL
     @discord.ui.button(label="🎰 Normal (1)", style=discord.ButtonStyle.primary)
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        global gacha_open
+
         uid = str(interaction.user.id)
 
+        if not gacha_open:
+            await interaction.response.send_message("🚫 Gacha is CLOSED", ephemeral=True)
+            return
+
         if user_currency.get(uid, 0) < 1:
-            await interaction.response.send_message("❌ Not enough coins.", ephemeral=True)
+            await interaction.response.send_message("❌ Not enough coins", ephemeral=True)
             return
 
         user_currency[uid] -= 1
@@ -90,13 +99,20 @@ class GachaView(discord.ui.View):
 
         await self.spin(interaction, lucky=False)
 
+    # LUCKY
     @discord.ui.button(label="🍀 Lucky (3)", style=discord.ButtonStyle.success)
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        global gacha_open
+
         uid = str(interaction.user.id)
 
+        if not gacha_open:
+            await interaction.response.send_message("🚫 Gacha is CLOSED", ephemeral=True)
+            return
+
         if user_currency.get(uid, 0) < 3:
-            await interaction.response.send_message("❌ Not enough coins.", ephemeral=True)
+            await interaction.response.send_message("❌ Not enough coins", ephemeral=True)
             return
 
         user_currency[uid] -= 3
@@ -105,7 +121,7 @@ class GachaView(discord.ui.View):
         await self.spin(interaction, lucky=True)
 
     # -----------------------------
-    # SPIN ANIMATION
+    # SLOT SPIN
     # -----------------------------
 
     async def spin(self, interaction, lucky=False):
@@ -126,7 +142,7 @@ class GachaView(discord.ui.View):
             pool = [r for r in rooms if not rooms[r].get("lucky", False)]
 
         if not pool:
-            await msg.edit(content="❌ No rooms available.")
+            await msg.edit(content="❌ No rooms available")
             return
 
         room = random.choices(
@@ -148,7 +164,7 @@ class GachaView(discord.ui.View):
             await interaction.user.send(embed=embed)
             await msg.edit(content="📩 Check your DMs!")
         except:
-            await msg.edit(content="❌ Could not DM you.")
+            await msg.edit(content="❌ Could not DM you")
 
 # -----------------------------
 # NANAGACHA
@@ -157,11 +173,14 @@ class GachaView(discord.ui.View):
 @tree.command(name="nanagacha", description="Play Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
 
+    status = "🟢 OPEN" if gacha_open else "🔴 CLOSED"
+
     embed = discord.Embed(
         title="🎰 NANAGACHA",
-        description="Click a button below to roll!",
+        description=f"Click a button below to roll!\n\nStatus: {status}",
         color=0x3498db
     )
+
     embed.set_footer(text="Normal = 1 coin | Lucky = 3 coins")
 
     await interaction.response.send_message(embed=embed, view=GachaView())
@@ -226,52 +245,32 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
     await interaction.response.send_message("✅ Done", ephemeral=True)
 
 # -----------------------------
-# SETCODE
+# OPEN / CLOSE GACHA
 # -----------------------------
 
-class RoomSelect(discord.ui.Select):
-    def __init__(self, code):
+@tree.command(name="open_gacha", description="Open gacha shop")
+async def open_gacha(interaction: discord.Interaction):
 
-        self.code = code
-
-        options = [discord.SelectOption(label=r) for r in rooms.keys()]
-
-        super().__init__(
-            placeholder="Select room...",
-            options=options,
-            min_values=1,
-            max_values=1
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-
-        if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-            await interaction.response.send_message("❌ No permission", ephemeral=True)
-            return
-
-        room = self.values[0]
-        rooms[room]["code"] = self.code
-        save_rooms(rooms)
-
-        await interaction.response.send_message(f"✅ Updated {room}", ephemeral=True)
-
-class RoomView(discord.ui.View):
-    def __init__(self, code):
-        super().__init__(timeout=60)
-        self.add_item(RoomSelect(code))
-
-@tree.command(name="setcode", description="Change room code")
-async def setcode(interaction: discord.Interaction, code: str):
+    global gacha_open
 
     if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
         await interaction.response.send_message("❌ No permission", ephemeral=True)
         return
 
-    await interaction.response.send_message(
-        "Select room:",
-        view=RoomView(code),
-        ephemeral=True
-    )
+    gacha_open = True
+    await interaction.response.send_message("🟢 Gacha OPEN")
+
+@tree.command(name="close_gacha", description="Close gacha shop")
+async def close_gacha(interaction: discord.Interaction):
+
+    global gacha_open
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message("❌ No permission", ephemeral=True)
+        return
+
+    gacha_open = False
+    await interaction.response.send_message("🔴 Gacha CLOSED")
 
 # -----------------------------
 # BALANCE
