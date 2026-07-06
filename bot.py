@@ -17,8 +17,11 @@ tree = app_commands.CommandTree(client)
 # -----------------------------
 
 def load_rooms():
-    with open("rooms.json", "r") as f:
-        return json.load(f)
+    try:
+        with open("rooms.json", "r") as f:
+            return json.load(f)
+    except:
+        return {}
 
 def save_rooms(data):
     with open("rooms.json", "w") as f:
@@ -66,14 +69,14 @@ RARITY_EMOJI = {
 }
 
 # -----------------------------
-# GACHA VIEW
+# GACHA
 # -----------------------------
 
 class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="🎰 Normal Roll (1 coin)", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="🎰 Normal (1)", style=discord.ButtonStyle.primary)
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         uid = str(interaction.user.id)
@@ -87,7 +90,7 @@ class GachaView(discord.ui.View):
 
         await self.spin(interaction, lucky=False)
 
-    @discord.ui.button(label="🍀 Lucky Roll (3 coins)", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="🍀 Lucky (3)", style=discord.ButtonStyle.success)
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         uid = str(interaction.user.id)
@@ -102,51 +105,51 @@ class GachaView(discord.ui.View):
         await self.spin(interaction, lucky=True)
 
     # -----------------------------
-    # 🎡 SPIN (IMPROVED SPEED)
+    # SPIN ANIMATION
     # -----------------------------
 
     async def spin(self, interaction, lucky=False):
 
-    await interaction.response.send_message("🎡 Spinning...", ephemeral=True)
-    msg = await interaction.original_response()
+        await interaction.response.send_message("🎡 Spinning...", ephemeral=True)
+        msg = await interaction.original_response()
 
-    frames = [
-        "🎡 Spinning",
-        "🎡 Spinning.",
-        "🎡 Spinning..",
-        "🎡 Spinning..."
-    ]
+        frames = ["🎡 Spinning", "🎡 Spinning.", "🎡 Spinning..", "🎡 Spinning..."]
 
-    # 🎡 animation
-    for _ in range(2):
-        for f in frames:
-            await msg.edit(content=f)
-            await asyncio.sleep(0.12)
+        for _ in range(2):
+            for f in frames:
+                await msg.edit(content=f)
+                await asyncio.sleep(0.15)
 
-    # 🎯 pool selection
-    if lucky:
-        pool = [r for r in rooms if rooms[r].get("lucky") is True]
-    else:
-        pool = [r for r in rooms if not rooms[r].get("lucky", False)]
+        if lucky:
+            pool = [r for r in rooms if rooms[r].get("lucky") is True]
+        else:
+            pool = [r for r in rooms if not rooms[r].get("lucky", False)]
 
-    room = random.choices(
-        pool,
-        weights=[rooms[r]["weight"] for r in pool],
-        k=1
-    )[0]
+        if not pool:
+            await msg.edit(content="❌ No rooms available.")
+            return
 
-    data = rooms[room]
-    rarity = data.get("rarity", "Common")
-    code = data["code"]
+        room = random.choices(
+            pool,
+            weights=[rooms[r]["weight"] for r in pool],
+            k=1
+        )[0]
 
-    embed = discord.Embed(
-        title=f"{rarity} ROLL",
-        description=f"{room}\nCode: {code}",
-        color=0x3498db
-    )
+        data = rooms[room]
+        rarity = data.get("rarity", "Common")
 
-    await interaction.user.send(embed=embed)
-    await msg.edit(content="📩 Check your DMs!")
+        embed = discord.Embed(
+            title=f"{RARITY_EMOJI.get(rarity)} {rarity} ROLL",
+            description=f"**{room}**\n🔑 Code: `{data['code']}`",
+            color=RARITY_COLORS.get(rarity, 0x3498db)
+        )
+
+        try:
+            await interaction.user.send(embed=embed)
+            await msg.edit(content="📩 Check your DMs!")
+        except:
+            await msg.edit(content="❌ Could not DM you.")
+
 # -----------------------------
 # NANAGACHA
 # -----------------------------
@@ -159,70 +162,15 @@ async def nanagacha(interaction: discord.Interaction):
         description="Click a button below to roll!",
         color=0x3498db
     )
-
     embed.set_footer(text="Normal = 1 coin | Lucky = 3 coins")
 
     await interaction.response.send_message(embed=embed, view=GachaView())
 
 # -----------------------------
-# SETCODE (RESTORED)
-# -----------------------------
-
-class RoomSelect(discord.ui.Select):
-    def __init__(self, code):
-
-        self.code = code
-
-        options = [
-            discord.SelectOption(label=r)
-            for r in rooms.keys()
-        ]
-
-        super().__init__(
-            placeholder="Choose a room...",
-            min_values=1,
-            max_values=1,
-            options=options
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-
-        if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-            await interaction.response.send_message("❌ No permission.", ephemeral=True)
-            return
-
-        room = self.values[0]
-        rooms[room]["code"] = self.code
-        save_rooms(rooms)
-
-        await interaction.response.send_message(
-            f"✅ Updated **{room}** code to `{self.code}`",
-            ephemeral=True
-        )
-
-class RoomDropdownView(discord.ui.View):
-    def __init__(self, code):
-        super().__init__(timeout=60)
-        self.add_item(RoomSelect(code))
-
-@tree.command(name="setcode", description="Admin: change room code")
-async def setcode(interaction: discord.Interaction, code: str):
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message("❌ No permission.", ephemeral=True)
-        return
-
-    await interaction.response.send_message(
-        "📋 Select the room to update:",
-        view=RoomDropdownView(code),
-        ephemeral=True
-    )
-
-# -----------------------------
 # DAILY
 # -----------------------------
 
-@tree.command(name="daily", description="Claim daily coin")
+@tree.command(name="daily", description="Claim coins")
 async def daily(interaction: discord.Interaction):
 
     uid = str(interaction.user.id)
@@ -230,7 +178,7 @@ async def daily(interaction: discord.Interaction):
 
     if now - daily_claims.get(uid, 0) < COOLDOWN:
         remaining = int(COOLDOWN - (now - daily_claims[uid]))
-        await interaction.response.send_message(f"⏳ Try again in {remaining//3600}h", ephemeral=True)
+        await interaction.response.send_message(f"⏳ Wait {remaining//3600}h", ephemeral=True)
         return
 
     daily_claims[uid] = now
@@ -275,7 +223,55 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
     user_currency[uid] = user_currency.get(uid, 0) + amount
     save_coins(user_currency)
 
-    await interaction.response.send_message(f"✅ Gave {amount} coins", ephemeral=True)
+    await interaction.response.send_message("✅ Done", ephemeral=True)
+
+# -----------------------------
+# SETCODE
+# -----------------------------
+
+class RoomSelect(discord.ui.Select):
+    def __init__(self, code):
+
+        self.code = code
+
+        options = [discord.SelectOption(label=r) for r in rooms.keys()]
+
+        super().__init__(
+            placeholder="Select room...",
+            options=options,
+            min_values=1,
+            max_values=1
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+
+        if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+            await interaction.response.send_message("❌ No permission", ephemeral=True)
+            return
+
+        room = self.values[0]
+        rooms[room]["code"] = self.code
+        save_rooms(rooms)
+
+        await interaction.response.send_message(f"✅ Updated {room}", ephemeral=True)
+
+class RoomView(discord.ui.View):
+    def __init__(self, code):
+        super().__init__(timeout=60)
+        self.add_item(RoomSelect(code))
+
+@tree.command(name="setcode", description="Change room code")
+async def setcode(interaction: discord.Interaction, code: str):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message("❌ No permission", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        "Select room:",
+        view=RoomView(code),
+        ephemeral=True
+    )
 
 # -----------------------------
 # BALANCE
