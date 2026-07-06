@@ -396,6 +396,72 @@ class NormalRoomsModal(discord.ui.Modal, title="🏠 Edit Normal Rooms"):
             embed=embed,
             ephemeral=True
         )
+# -----------------------------
+# LUCKY ROOM MODAL
+# -----------------------------
+
+class LuckyRoomsModal(discord.ui.Modal, title="🍀 Edit Lucky Rooms"):
+
+    room1 = discord.ui.TextInput(
+        label="Lucky Room 1 Code",
+        placeholder="Enter Lucky Room 1 code",
+        required=True,
+        max_length=20
+    )
+
+    room2 = discord.ui.TextInput(
+        label="Lucky Room 2 Code",
+        placeholder="Enter Lucky Room 2 code",
+        required=True,
+        max_length=20
+    )
+
+    room3 = discord.ui.TextInput(
+        label="Lucky Room 3 Code",
+        placeholder="Enter Lucky Room 3 code",
+        required=True,
+        max_length=20
+    )
+
+    room4 = discord.ui.TextInput(
+        label="Lucky Room 4 Code",
+        placeholder="Enter Lucky Room 4 code",
+        required=True,
+        max_length=20
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        old_codes = {
+            "Lucky Room 1": rooms["Lucky Room 1"]["code"],
+            "Lucky Room 2": rooms["Lucky Room 2"]["code"],
+            "Lucky Room 3": rooms["Lucky Room 3"]["code"],
+            "Lucky Room 4": rooms["Lucky Room 4"]["code"]
+        }
+
+        rooms["Lucky Room 1"]["code"] = self.room1.value
+        rooms["Lucky Room 2"]["code"] = self.room2.value
+        rooms["Lucky Room 3"]["code"] = self.room3.value
+        rooms["Lucky Room 4"]["code"] = self.room4.value
+
+        save_rooms(rooms)
+
+        embed = discord.Embed(
+            title="✅ Lucky Room Codes Updated",
+            color=0xf1c40f
+        )
+
+        for room in old_codes:
+            embed.add_field(
+                name=room,
+                value=f"`{old_codes[room]}` ➜ `{rooms[room]['code']}`",
+                inline=False
+            )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
         
 # -----------------------------
 # ROOM MENU
@@ -414,9 +480,9 @@ class RoomMenuView(discord.ui.View):
 
     @discord.ui.button(label="🍀 Lucky Rooms", style=discord.ButtonStyle.success)
     async def lucky_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Lucky Rooms editor coming next!",
-            ephemeral=True
+
+        await interaction.response.send_modal(
+            LuckyRoomsModal()
         )
 
     @discord.ui.button(label="📋 List Rooms", style=discord.ButtonStyle.secondary)
