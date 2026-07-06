@@ -2,6 +2,8 @@ import discord
 from discord import app_commands
 import random
 import os
+import json
+import time
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -10,25 +12,29 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 # -----------------------------
+# ROOMS SYSTEM
+# -----------------------------
+
+def load_rooms():
+    with open("rooms.json", "r") as f:
+        return json.load(f)
+
+def save_rooms(data):
+    with open("rooms.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+rooms = load_rooms()
+
+# -----------------------------
 # DATA
 # -----------------------------
 
-ROOM_CODES = {
-    "Room 1": "4829",
-    "Room 2": "7314",
-    "Room 3": "1962",
-    "Room 4": "8501"
-}
-
-ROOM_WEIGHTS = {
-    "Room 1": 55,
-    "Room 2": 25,
-    "Room 3": 15,
-    "Room 4": 5
-}
-
-# currency storage
 user_currency = {}
+daily_claims = {}
+COOLDOWN = 86400
+
+ALLOWED_ROLE_ID = 1517330293101564036  # YOUR ROLE ID
+
 # -----------------------------
 # GACHA BUTTON
 # -----------------------------
@@ -54,12 +60,12 @@ class GachaView(discord.ui.View):
         await interaction.response.defer(ephemeral=True)
 
         room = random.choices(
-            list(ROOM_WEIGHTS.keys()),
-            weights=list(ROOM_WEIGHTS.values()),
+            list(rooms.keys()),
+            weights=[rooms[r]["weight"] for r in rooms],
             k=1
         )[0]
 
-        code = ROOM_CODES[room]
+        code = rooms[room]["code"]
 
         try:
             await interaction.user.send(
@@ -76,7 +82,8 @@ class GachaView(discord.ui.View):
                 "I could not DM you. Enable DMs from server members.",
                 ephemeral=True
             )
-            # -----------------------------
+
+# -----------------------------
 # COMMANDS
 # -----------------------------
 
@@ -86,13 +93,6 @@ async def nanagacha(interaction: discord.Interaction):
         "🎰 Nanagacha is ready. Roll if you have Nanacoins.",
         view=GachaView()
     )
-
-
-import time
-
-daily_claims = {}
-
-COOLDOWN = 86400  # 24 hours
 
 
 @tree.command(name="daily", description="Claim your daily Nanacoin")
@@ -115,7 +115,6 @@ async def daily(interaction: discord.Interaction):
         return
 
     daily_claims[user_id] = now
-
     user_currency[user_id] = user_currency.get(user_id, 0) + 1
 
     await interaction.response.send_message(
@@ -124,25 +123,23 @@ async def daily(interaction: discord.Interaction):
     )
 
 
-ALLOWED_ROLE_ID = 1517330293101564036  # Replace with your role ID
+# -----------------------------
+# GIVE COINS (ROLE LOCKED)
+# -----------------------------
 
 @tree.command(name="givecoins", description="Admin: give coins")
-async def givecoins(
-    interaction: discord.Interaction,
-    user: discord.Member,
-    amount: int
-):
-
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            "This command can only be used in a server.",
-            ephemeral=True
-        )
-        return
+async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
 
     if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
         await interaction.response.send_message(
             "❌ You don't have permission to use this command.",
+            ephemeral=True
+        )
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message(
+            "❌ Amount must be greater than 0.",
             ephemeral=True
         )
         return
@@ -154,11 +151,45 @@ async def givecoins(
         ephemeral=True
     )
 
+
+# -----------------------------
+# SET ROOM CODE (ROLE LOCKED)
+# -----------------------------
+
+@tree.command(name="setcode", description="Admin: change room passcode")
+async def setcode(interaction: discord.Interaction, room: str, code: str):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message(
+            "❌ You don't have permission to use this command.",
+            ephemeral=True
+        )
+        return
+
+    if room not in rooms:
+        await interaction.response.send_message(
+            "❌ That room does not exist.",
+            ephemeral=True
+        )
+        return
+
+    rooms[room]["code"] = code
+    save_rooms(rooms)
+
+    await interaction.response.send_message(
+        f"✅ Updated **{room}** passcode to `{code}`.",
+        ephemeral=True
+    )
+
+
+# -----------------------------
+# BALANCE
+# -----------------------------
+
 @tree.command(name="balance", description="Check Nanacoin balance")
 async def balance(interaction: discord.Interaction):
 
-    user_id = interaction.user.id
-    amount = user_currency.get(user_id, 0)
+    amount = user_currency.get(interaction.user.id, 0)
 
     await interaction.response.send_message(
         f"🪙 You have **{amount} Nanacoins**.",
@@ -167,7 +198,7 @@ async def balance(interaction: discord.Interaction):
 
 
 # -----------------------------
-# READY + RUN
+# READY
 # -----------------------------
 
 @client.event
@@ -176,5 +207,3 @@ async def on_ready():
     print(f"Logged in as {client.user}")
 
 client.run(TOKEN)
-
-
