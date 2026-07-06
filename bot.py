@@ -126,10 +126,10 @@ class GachaView(discord.ui.View):
 
     async def spin(self, interaction, lucky=False):
 
-        await interaction.response.send_message("🎰", ephemeral=True)
+        await interaction.response.send_message("🎰 Starting NanaGacha...", ephemeral=True)
         msg = await interaction.original_response()
 
-        # Pick the room FIRST (hidden from the player)
+        # Pick result BEFORE animation
         if lucky:
             pool = [r for r in rooms if rooms[r].get("lucky") is True]
         else:
@@ -146,56 +146,140 @@ class GachaView(discord.ui.View):
         )[0]
 
         data = rooms[room]
-        rarity = data.get("rarity", "Common")
+        rarity = data["rarity"]
+
+        final = {
+            "Common": "🟢",
+            "Rare": "🔵",
+            "Epic": "🟣",
+            "Legendary": "🟡"
+        }[rarity]
 
         symbols = ["🟢", "🔵", "🟣", "🟡"]
 
-        # Spin animation
-        for _ in range(25):
-            reels = f"{random.choice(symbols)} {random.choice(symbols)} {random.choice(symbols)}"
+        left = random.choice(symbols)
+        middle = random.choice(symbols)
+        right = random.choice(symbols)
+
+        # -----------------
+        # Full spin
+        # -----------------
+
+        for _ in range(18):
+
+            left = random.choice(symbols)
+            middle = random.choice(symbols)
+            right = random.choice(symbols)
 
             await msg.edit(
-                content=f"🎰 **NanaGacha**\n\n{reels}"
+                content=
+                "━━━━━━━━━━━━━━━━━━\n"
+                "🎰 **NanaGacha**\n\n"
+                f"〔 {left} │ {middle} │ {right} 〕\n\n"
+                "🎲 Rolling...\n"
+                "━━━━━━━━━━━━━━━━━━"
             )
 
-            await asyncio.sleep(0.10)
+            await asyncio.sleep(0.08)
 
-        # Slow down
-        for delay in [0.15, 0.20, 0.30, 0.45]:
-            reels = f"{random.choice(symbols)} {random.choice(symbols)} {random.choice(symbols)}"
+        # -----------------
+        # Left reel stops
+        # -----------------
+
+        left = final
+
+        for delay in [0.10, 0.13, 0.16, 0.20]:
+
+            middle = random.choice(symbols)
+            right = random.choice(symbols)
 
             await msg.edit(
-                content=f"🎰 **NanaGacha**\n\n{reels}"
+                content=
+                "━━━━━━━━━━━━━━━━━━\n"
+                "🎰 **NanaGacha**\n\n"
+                f"〔 {left} │ {middle} │ {right} 〕\n\n"
+                "🎲 Slowing down...\n"
+                "━━━━━━━━━━━━━━━━━━"
             )
 
             await asyncio.sleep(delay)
 
-        final_slots = {
-            "Common": "🟢 🟢 🟢",
-            "Rare": "🔵 🔵 🔵",
-            "Epic": "🟣 🟣 🟣",
-            "Legendary": "🟡 🟡 🟡"
-        }
+        # -----------------
+        # Middle reel stops
+        # -----------------
+
+        middle = final
+
+        for delay in [0.15, 0.20, 0.25]:
+
+            right = random.choice(symbols)
+
+            await msg.edit(
+                content=
+                "━━━━━━━━━━━━━━━━━━\n"
+                "🎰 **NanaGacha**\n\n"
+                f"〔 {left} │ {middle} │ {right} 〕\n\n"
+                "✨ Almost...\n"
+                "━━━━━━━━━━━━━━━━━━"
+            )
+
+            await asyncio.sleep(delay)
+
+        # -----------------
+        # Reel bounce
+        # -----------------
+
+        right = random.choice(symbols)
 
         await msg.edit(
-            content=f"🎰 **NanaGacha**\n\n{final_slots[rarity]}"
+            content=
+            "━━━━━━━━━━━━━━━━━━\n"
+            "🎰 **NanaGacha**\n\n"
+            f"〔 {left} │ {middle} │ {right} 〕\n\n"
+            "👀 ...\n"
+            "━━━━━━━━━━━━━━━━━━"
         )
 
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.18)
+
+        right = final
+
+        await msg.edit(
+            content=
+            "━━━━━━━━━━━━━━━━━━\n"
+            "🎰 **NanaGacha**\n\n"
+            f"〔 {left} │ {middle} │ {right} 〕\n\n"
+            "✨ JACKPOT! ✨\n"
+            "━━━━━━━━━━━━━━━━━━"
+        )
+
+        await asyncio.sleep(1)
 
         embed = discord.Embed(
-            title=f"{RARITY_EMOJI.get(rarity)} {rarity} ROLL",
+            title=f"{RARITY_EMOJI[rarity]} {rarity} Roll!",
             description=f"**{room}**\n🔑 Code: `{data['code']}`",
-            color=RARITY_COLORS.get(rarity, 0x3498db)
+            color=RARITY_COLORS[rarity]
         )
 
         try:
             await interaction.user.send(embed=embed)
-            await msg.edit(content=f"🎉 **{rarity}!**\n📩 Check your DMs!")
+
+            await msg.edit(
+                content=
+                "━━━━━━━━━━━━━━━━━━\n"
+                f"🎉 **{rarity}!**\n\n"
+                "📩 Your room code has been sent to your DMs!\n"
+                "━━━━━━━━━━━━━━━━━━"
+            )
 
         except:
-            await msg.edit(content="❌ Could not DM you.")
-        
+
+            await msg.edit(
+                content=
+                "❌ I couldn't DM you.\n"
+                "Please enable DMs from this server."
+            )
+            
 # -----------------------------
 # NANAGACHA
 # -----------------------------
