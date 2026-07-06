@@ -173,7 +173,7 @@ class GachaView(discord.ui.View):
 @tree.command(name="nanagacha", description="Play Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
 
-    status = "🟢 OPEN" if gacha_open else "🔴 CLOSED"
+    status = "🟢 OPENED" if gacha_open else "🔴 CLOSED"
 
     embed = discord.Embed(
         title="🎰 NanaGacha",
@@ -248,11 +248,18 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
 # SET ROOM CODE
 # -----------------------------
 
+async def room_autocomplete(
+    interaction: discord.Interaction,
+    current: str,
+):
+    return [
+        app_commands.Choice(name=room, value=room)
+        for room in rooms.keys()
+        if current.lower() in room.lower()
+    ][:25]
+    
 @tree.command(name="setcode", description="Change the code for an existing room")
-@app_commands.describe(
-    room="The room to edit",
-    new_code="The new passcode"
-)
+@app_commands.autocomplete(room=room_autocomplete)
 async def setcode(
     interaction: discord.Interaction,
     room: str,
@@ -262,13 +269,6 @@ async def setcode(
     if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
         await interaction.response.send_message(
             "❌ No permission.",
-            ephemeral=True
-        )
-        return
-
-    if room not in rooms:
-        await interaction.response.send_message(
-            f"❌ Room '{room}' doesn't exist.",
             ephemeral=True
         )
         return
@@ -283,8 +283,8 @@ async def setcode(
     )
 
     embed.add_field(name="Room", value=room, inline=False)
-    embed.add_field(name="Old Code", value=f"`{old_code}`", inline=True)
-    embed.add_field(name="New Code", value=f"`{new_code}`", inline=True)
+    embed.add_field(name="Old Code", value=f"`{old_code}`")
+    embed.add_field(name="New Code", value=f"`{new_code}`")
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -302,7 +302,7 @@ async def open_gacha(interaction: discord.Interaction):
         return
 
     gacha_open = True
-    await interaction.response.send_message("🟢 Gacha OPEN")
+    await interaction.response.send_message("🟢 Gacha OPENED")
 
 @tree.command(name="close_gacha", description="Close gacha shop")
 async def close_gacha(interaction: discord.Interaction):
