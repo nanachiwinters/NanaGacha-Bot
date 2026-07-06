@@ -226,110 +226,7 @@ async def leaderboard(interaction: discord.Interaction):
     )
 
     await interaction.response.send_message(embed=embed)
-
-# -----------------------------
-# GIVE COINS
-# -----------------------------
-
-@tree.command(name="givecoins", description="Admin give coins")
-async def givecoins(interaction: discord.Interaction, user: discord.Member, amount: int):
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message("❌ No permission", ephemeral=True)
-        return
-
-    uid = str(user.id)
-    user_currency[uid] = user_currency.get(uid, 0) + amount
-    save_coins(user_currency)
-
-    await interaction.response.send_message("✅ Done", ephemeral=True)
-
-# -----------------------------
-# SET ROOM CODE
-# -----------------------------
-
-async def room_autocomplete(
-    interaction: discord.Interaction,
-    current: str,
-):
-    return [
-        app_commands.Choice(name=room, value=room)
-        for room in rooms.keys()
-        if current.lower() in room.lower()
-    ][:25]
     
-@tree.command(name="setcode", description="Change the code for an existing room")
-@app_commands.autocomplete(room=room_autocomplete)
-async def setcode(
-    interaction: discord.Interaction,
-    room: str,
-    new_code: str
-):
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message(
-            "❌ No permission.",
-            ephemeral=True
-        )
-        return
-
-    old_code = rooms[room]["code"]
-    rooms[room]["code"] = new_code
-    save_rooms(rooms)
-
-    embed = discord.Embed(
-        title="✅ Room Code Updated",
-        color=0x2ecc71
-    )
-
-    embed.add_field(name="Room", value=room, inline=False)
-    embed.add_field(name="Old Code", value=f"`{old_code}`")
-    embed.add_field(name="New Code", value=f"`{new_code}`")
-
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-# -----------------------------
-# OPEN / CLOSE GACHA
-# -----------------------------
-
-@tree.command(name="open_gacha", description="Open gacha shop")
-async def open_gacha(interaction: discord.Interaction):
-
-    global gacha_open
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message("❌ No permission", ephemeral=True)
-        return
-
-    gacha_open = True
-    await interaction.response.send_message("🟢 Gacha OPENED")
-
-@tree.command(name="close_gacha", description="Close gacha shop")
-async def close_gacha(interaction: discord.Interaction):
-
-    global gacha_open
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message("❌ No permission", ephemeral=True)
-        return
-
-    gacha_open = False
-    await interaction.response.send_message("🔴 Gacha CLOSED")
-
-# -----------------------------
-# BALANCE
-# -----------------------------
-
-@tree.command(name="balance", description="Check coins")
-async def balance(interaction: discord.Interaction):
-
-    uid = str(interaction.user.id)
-
-    await interaction.response.send_message(
-        f"🪙 {user_currency.get(uid, 0)} coins",
-        ephemeral=True
-    )
-
 # -----------------------------
 # NORMAL ROOM MODAL
 # -----------------------------
@@ -545,19 +442,14 @@ class GiveCoinsModal(discord.ui.Modal, title="➕ Give Coins"):
 
     async def on_submit(self, interaction: discord.Interaction):
 
-raw = self.user_id.value.strip()
-
-# Convert a Discord mention into an ID
-raw = raw.replace("<@", "").replace("!", "").replace(">", "")
-
-try:
-    user = await client.fetch_user(int(raw))
-except:
-    await interaction.response.send_message(
-        "❌ Invalid user.",
-        ephemeral=True
-    )
-    return
+    try:
+        user = await client.fetch_user(int(self.user_id.value))
+    except:
+        await interaction.response.send_message(
+            "❌ Invalid User ID.",
+            ephemeral=True
+        )
+        return
 
         try:
             amount = int(self.amount.value)
