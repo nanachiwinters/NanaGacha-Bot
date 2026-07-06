@@ -587,6 +587,66 @@ class GiveCoinsModal(discord.ui.Modal, title="➕ Give Coins"):
         )
         
 # -----------------------------
+# REMOVE COINS MODAL
+# -----------------------------
+
+class RemoveCoinsModal(discord.ui.Modal, title="➖ Remove Coins"):
+
+    user_id = discord.ui.TextInput(
+        label="User ID",
+        placeholder="Enter the user's Discord ID",
+        required=True
+    )
+
+    amount = discord.ui.TextInput(
+        label="Amount",
+        placeholder="How many coins?",
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        try:
+            user = await client.fetch_user(int(self.user_id.value))
+        except:
+            await interaction.response.send_message(
+                "❌ Invalid User ID.",
+                ephemeral=True
+            )
+            return
+
+        try:
+            amount = int(self.amount.value)
+        except:
+            await interaction.response.send_message(
+                "❌ Amount must be a number.",
+                ephemeral=True
+            )
+            return
+
+        uid = str(user.id)
+
+        current = user_currency.get(uid, 0)
+        new_balance = max(0, current - amount)
+
+        user_currency[uid] = new_balance
+        save_coins(user_currency)
+
+        embed = discord.Embed(
+            title="➖ Coins Removed",
+            color=0xe74c3c
+        )
+
+        embed.add_field(name="User", value=user.mention, inline=False)
+        embed.add_field(name="Removed", value=f"🪙 {amount}", inline=False)
+        embed.add_field(name="New Balance", value=f"🪙 {new_balance}", inline=False)
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+        
+# -----------------------------
 # ECONOMY MENU
 # -----------------------------
 
@@ -603,9 +663,9 @@ class EconomyMenuView(discord.ui.View):
 
     @discord.ui.button(label="➖ Remove Coins", style=discord.ButtonStyle.danger)
     async def remove(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Remove Coins coming next!",
-            ephemeral=True
+
+        await interaction.response.send_modal(
+            RemoveCoinsModal()
         )
 
     @discord.ui.button(label="✏️ Set Coins", style=discord.ButtonStyle.primary)
