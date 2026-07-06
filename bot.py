@@ -372,7 +372,9 @@ class AdminView(discord.ui.View):
             item.disabled = True
 
         await interaction.response.edit_message(view=self)
-        @tree.command(name="admin", description="Open the admin panel")
+
+
+@tree.command(name="admin", description="Open the admin panel")
 async def admin(interaction: discord.Interaction):
 
     if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
