@@ -59,7 +59,7 @@ class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="🎰 Roll Nanagacha", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="🎰 Normal Roll (1 coin)", style=discord.ButtonStyle.primary)
     async def roll(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         user_id = interaction.user.id
@@ -148,7 +148,7 @@ class GachaView(discord.ui.View):
 @tree.command(name="nanagacha", description="Roll the Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
     await interaction.response.send_message(
-        "🎰 Nanagacha is ready.\n🎰 Normal = 1 coin | 🍀 Lucky = 3 coins",
+        "🎰 Nanagacha is ready.",
         view=GachaView()
     )
 
