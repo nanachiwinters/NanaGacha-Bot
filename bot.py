@@ -331,6 +331,74 @@ async def balance(interaction: discord.Interaction):
     )
 
 # -----------------------------
+# ADMIN PANEL
+# -----------------------------
+
+class AdminView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
+    @discord.ui.button(label="🔑 Rooms", style=discord.ButtonStyle.primary)
+    async def rooms_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Rooms menu coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="💰 Economy", style=discord.ButtonStyle.success)
+    async def economy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Economy menu coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="🟢 Open", style=discord.ButtonStyle.secondary)
+    async def open_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Open button coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="🔴 Close", style=discord.ButtonStyle.secondary)
+    async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Close button coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="❌ Close Panel", style=discord.ButtonStyle.danger, row=1)
+    async def exit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        for item in self.children:
+            item.disabled = True
+
+        await interaction.response.edit_message(view=self)
+        @tree.command(name="admin", description="Open the admin panel")
+async def admin(interaction: discord.Interaction):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message(
+            "❌ No permission.",
+            ephemeral=True
+        )
+        return
+
+    status = "🟢 OPENED" if gacha_open else "🔴 CLOSED"
+
+    embed = discord.Embed(
+        title="🛠️ NanaGacha Admin Panel",
+        description=f"**Gacha Status:** {status}",
+        color=0x5865F2
+    )
+
+    embed.set_footer(text="Select an option below.")
+
+    await interaction.response.send_message(
+        embed=embed,
+        view=AdminView(),
+        ephemeral=True
+    )
+        
+# -----------------------------
 # READY
 # -----------------------------
 
