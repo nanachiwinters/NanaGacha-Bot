@@ -383,7 +383,7 @@ class RoomMenuView(discord.ui.View):
         super().__init__(timeout=300)
 
     @discord.ui.button(label="🏠 Normal Rooms", style=discord.ButtonStyle.primary)
-async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
 
     await interaction.response.send_modal(
         NormalRoomsModal()
