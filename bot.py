@@ -109,7 +109,7 @@ class GachaView(discord.ui.View):
         for _ in range(3):
             for t in spin_texts:
                 await msg.edit(content=t)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.2)
 
         pool = list(rooms.keys())
 
