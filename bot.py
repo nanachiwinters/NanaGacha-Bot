@@ -26,14 +26,30 @@ def save_rooms(data):
 rooms = load_rooms()
 
 # -----------------------------
+# COINS SYSTEM (NEW)
+# -----------------------------
+
+def load_coins():
+    try:
+        with open("coins.json", "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_coins(data):
+    with open("coins.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+user_currency = load_coins()
+
+# -----------------------------
 # DATA
 # -----------------------------
 
-user_currency = {}
 daily_claims = {}
 COOLDOWN = 86400
 
-ALLOWED_ROLE_ID = 1517330293101564036  # YOUR ROLE ID
+ALLOWED_ROLE_ID = 1517330293101564036
 
 # -----------------------------
 # GACHA BUTTON
@@ -48,14 +64,15 @@ class GachaView(discord.ui.View):
 
         user_id = interaction.user.id
 
-        if user_currency.get(user_id, 0) < 1:
+        if user_currency.get(str(user_id), 0) < 1:
             await interaction.response.send_message(
                 "❌ Not enough coins. Use /daily.",
                 ephemeral=True
             )
             return
 
-        user_currency[user_id] -= 1
+        user_currency[str(user_id)] = user_currency.get(str(user_id), 0) - 1
+        save_coins(user_currency)
 
         await interaction.response.defer(ephemeral=True)
 
@@ -115,7 +132,9 @@ async def daily(interaction: discord.Interaction):
         return
 
     daily_claims[user_id] = now
-    user_currency[user_id] = user_currency.get(user_id, 0) + 1
+
+    user_currency[str(user_id)] = user_currency.get(str(user_id), 0) + 1
+    save_coins(user_currency)
 
     await interaction.response.send_message(
         "🎟️ You claimed your daily Nanacoin (1).",
@@ -124,7 +143,7 @@ async def daily(interaction: discord.Interaction):
 
 
 # -----------------------------
-# GIVE COINS (ROLE LOCKED)
+# GIVE COINS
 # -----------------------------
 
 @tree.command(name="givecoins", description="Admin: give coins")
@@ -137,14 +156,8 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
         )
         return
 
-    if amount <= 0:
-        await interaction.response.send_message(
-            "❌ Amount must be greater than 0.",
-            ephemeral=True
-        )
-        return
-
-    user_currency[user.id] = user_currency.get(user.id, 0) + amount
+    user_currency[str(user.id)] = user_currency.get(str(user.id), 0) + amount
+    save_coins(user_currency)
 
     await interaction.response.send_message(
         f"✅ Gave {amount} Nanacoins to {user.mention}.",
@@ -153,7 +166,7 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
 
 
 # -----------------------------
-# SET ROOM CODE (ROLE LOCKED)
+# SET CODE (UNCHANGED)
 # -----------------------------
 
 class RoomSelect(discord.ui.Select):
@@ -216,6 +229,7 @@ async def setcode(interaction: discord.Interaction, code: str):
         ephemeral=True
     )
 
+
 # -----------------------------
 # BALANCE
 # -----------------------------
@@ -223,7 +237,7 @@ async def setcode(interaction: discord.Interaction, code: str):
 @tree.command(name="balance", description="Check Nanacoin balance")
 async def balance(interaction: discord.Interaction):
 
-    amount = user_currency.get(interaction.user.id, 0)
+    amount = user_currency.get(str(interaction.user.id), 0)
 
     await interaction.response.send_message(
         f"🪙 You have **{amount} Nanacoins**.",
