@@ -120,91 +120,81 @@ class GachaView(discord.ui.View):
 
         await self.spin(interaction, lucky=True)
 
-# -----------------------------
-# SLOT SPIN
-# -----------------------------
+    # -----------------------------
+    # SLOT SPIN
+    # -----------------------------
 
-async def spin(self, interaction, lucky=False):
+    async def spin(self, interaction, lucky=False):
 
-    await interaction.response.send_message("🎰", ephemeral=True)
-    msg = await interaction.original_response()
+        await interaction.response.send_message("🎰", ephemeral=True)
+        msg = await interaction.original_response()
 
-    # Pick the room FIRST (hidden from the player)
-    if lucky:
-        pool = [r for r in rooms if rooms[r].get("lucky") is True]
-    else:
-        pool = [r for r in rooms if not rooms[r].get("lucky", False)]
+        # Pick the room FIRST (hidden from the player)
+        if lucky:
+            pool = [r for r in rooms if rooms[r].get("lucky") is True]
+        else:
+            pool = [r for r in rooms if not rooms[r].get("lucky", False)]
 
-    if not pool:
-        await msg.edit(content="❌ No rooms available")
-        return
+        if not pool:
+            await msg.edit(content="❌ No rooms available")
+            return
 
-    room = random.choices(
-        pool,
-        weights=[rooms[r]["weight"] for r in pool],
-        k=1
-    )[0]
+        room = random.choices(
+            pool,
+            weights=[rooms[r]["weight"] for r in pool],
+            k=1
+        )[0]
 
-    data = rooms[room]
-    rarity = data.get("rarity", "Common")
+        data = rooms[room]
+        rarity = data.get("rarity", "Common")
 
-    # Fake slot animation
-    frames = [
-        "🎰 **NanaGacha**\n\n🟢 🔵 🟣",
-        "🎰 **NanaGacha**\n\n🟣 🟢 🟡",
-        "🎰 **NanaGacha**\n\n🔵 🟣 🟢",
-        "🎰 **NanaGacha**\n\n🟡 🔵 🟣",
-        "🎰 **NanaGacha**\n\n🟢 🟡 🔵",
-        "🎰 **NanaGacha**\n\n🔵 🟢 🟡",
-        "🎰 **NanaGacha**\n\n🟣 🔵 🟢",
-        "🎰 **NanaGacha**\n\n🟡 🟣 🔵",
-    ]
+        symbols = ["🟢", "🔵", "🟣", "🟡"]
 
-    # Fast spin
-    for _ in range(3):
-        for frame in frames:
-            await msg.edit(content=frame)
+        # Spin animation
+        for _ in range(25):
+            reels = f"{random.choice(symbols)} {random.choice(symbols)} {random.choice(symbols)}"
+
+            await msg.edit(
+                content=f"🎰 **NanaGacha**\n\n{reels}"
+            )
+
             await asyncio.sleep(0.10)
 
-    # Slow down
-    slowdown = [0.15, 0.20, 0.28, 0.40]
+        # Slow down
+        for delay in [0.15, 0.20, 0.30, 0.45]:
+            reels = f"{random.choice(symbols)} {random.choice(symbols)} {random.choice(symbols)}"
 
-    for i, delay in enumerate(slowdown):
-        await msg.edit(content=frames[i])
-        await asyncio.sleep(delay)
+            await msg.edit(
+                content=f"🎰 **NanaGacha**\n\n{reels}"
+            )
 
-    # Final slot display based on rarity
-    final_slots = {
-        "Common": "🟢 🟢 🟢",
-        "Rare": "🔵 🔵 🔵",
-        "Epic": "🟣 🟣 🟣",
-        "Legendary": "🟡 🟡 🟡"
-    }
+            await asyncio.sleep(delay)
 
-    await msg.edit(
-        content=f"🎰 **NanaGacha**\n\n{final_slots.get(rarity, '⚪ ⚪ ⚪')}"
-    )
-
-    await asyncio.sleep(0.8)
-
-    # Result embed
-    embed = discord.Embed(
-        title=f"{RARITY_EMOJI.get(rarity)} {rarity} ROLL",
-        description=f"**{room}**\n🔑 Code: `{data['code']}`",
-        color=RARITY_COLORS.get(rarity, 0x3498db)
-    )
-
-    try:
-        await interaction.user.send(embed=embed)
+        final_slots = {
+            "Common": "🟢 🟢 🟢",
+            "Rare": "🔵 🔵 🔵",
+            "Epic": "🟣 🟣 🟣",
+            "Legendary": "🟡 🟡 🟡"
+        }
 
         await msg.edit(
-            content=f"🎉 **{rarity}!**\n📩 Check your DMs!"
+            content=f"🎰 **NanaGacha**\n\n{final_slots[rarity]}"
         )
 
-    except:
-        await msg.edit(
-            content="❌ Could not DM you."
+        await asyncio.sleep(0.8)
+
+        embed = discord.Embed(
+            title=f"{RARITY_EMOJI.get(rarity)} {rarity} ROLL",
+            description=f"**{room}**\n🔑 Code: `{data['code']}`",
+            color=RARITY_COLORS.get(rarity, 0x3498db)
         )
+
+        try:
+            await interaction.user.send(embed=embed)
+            await msg.edit(content=f"🎉 **{rarity}!**\n📩 Check your DMs!")
+
+        except:
+            await msg.edit(content="❌ Could not DM you.")
         
 # -----------------------------
 # NANAGACHA
