@@ -329,7 +329,74 @@ async def balance(interaction: discord.Interaction):
         f"🪙 {user_currency.get(uid, 0)} coins",
         ephemeral=True
     )
-    
+
+# -----------------------------
+# NORMAL ROOM MODAL
+# -----------------------------
+
+class NormalRoomsModal(discord.ui.Modal, title="🏠 Edit Normal Rooms"):
+
+    room1 = discord.ui.TextInput(
+        label="Room 1 Code",
+        placeholder="Enter new code",
+        required=True,
+        max_length=20
+    )
+
+    room2 = discord.ui.TextInput(
+        label="Room 2 Code",
+        placeholder="Enter new code",
+        required=True,
+        max_length=20
+    )
+
+    room3 = discord.ui.TextInput(
+        label="Room 3 Code",
+        placeholder="Enter new code",
+        required=True,
+        max_length=20
+    )
+
+    room4 = discord.ui.TextInput(
+        label="Room 4 Code",
+        placeholder="Enter new code",
+        required=True,
+        max_length=20
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+    old_codes = {
+        "Room 1": rooms["Room 1"]["code"],
+        "Room 2": rooms["Room 2"]["code"],
+        "Room 3": rooms["Room 3"]["code"],
+        "Room 4": rooms["Room 4"]["code"]
+    }
+
+    rooms["Room 1"]["code"] = str(self.room1)
+    rooms["Room 2"]["code"] = str(self.room2)
+    rooms["Room 3"]["code"] = str(self.room3)
+    rooms["Room 4"]["code"] = str(self.room4)
+
+    save_rooms(rooms)
+
+    embed = discord.Embed(
+        title="✅ Normal Room Codes Updated",
+        color=0x2ecc71
+    )
+
+    for room in old_codes:
+        embed.add_field(
+            name=room,
+            value=f"`{old_codes[room]}` ➜ `{rooms[room]['code']}`",
+            inline=False
+        )
+
+    await interaction.response.send_message(
+        embed=embed,
+        ephemeral=True
+    )
+        
 # -----------------------------
 # ROOM MENU
 # -----------------------------
@@ -339,11 +406,11 @@ class RoomMenuView(discord.ui.View):
         super().__init__(timeout=300)
 
     @discord.ui.button(label="🏠 Normal Rooms", style=discord.ButtonStyle.primary)
-    async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Normal Rooms editor coming next!",
-            ephemeral=True
-        )
+async def normal_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+    await interaction.response.send_modal(
+        NormalRoomsModal()
+    )
 
     @discord.ui.button(label="🍀 Lucky Rooms", style=discord.ButtonStyle.success)
     async def lucky_rooms(self, interaction: discord.Interaction, button: discord.ui.Button):
