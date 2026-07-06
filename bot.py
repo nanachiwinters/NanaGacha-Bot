@@ -156,31 +156,65 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
 # SET ROOM CODE (ROLE LOCKED)
 # -----------------------------
 
-@tree.command(name="setcode", description="Admin: change room passcode")
-async def setcode(interaction: discord.Interaction, room: str, code: str):
+class RoomSelect(discord.ui.Select):
+    def __init__(self, rooms, code):
+
+        options = [
+            discord.SelectOption(label=room)
+            for room in rooms
+        ]
+
+        self.rooms = rooms
+        self.code = code
+
+        super().__init__(
+            placeholder="Choose a room...",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+
+        room = self.values[0]
+
+        if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+            await interaction.response.send_message(
+                "❌ You don't have permission.",
+                ephemeral=True
+            )
+            return
+
+        rooms[room]["code"] = self.code
+        save_rooms(rooms)
+
+        await interaction.response.send_message(
+            f"✅ Updated **{room}** passcode to `{self.code}`.",
+            ephemeral=True
+        )
+
+
+class RoomDropdownView(discord.ui.View):
+    def __init__(self, code):
+        super().__init__(timeout=60)
+        self.add_item(RoomSelect(list(rooms.keys()), code))
+
+
+@tree.command(name="setcode", description="Admin: change room passcode (dropdown)")
+async def setcode(interaction: discord.Interaction, code: str):
 
     if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
         await interaction.response.send_message(
-            "❌ You don't have permission to use this command.",
+            "❌ You don't have permission.",
             ephemeral=True
         )
         return
-
-    if room not in rooms:
-        await interaction.response.send_message(
-            "❌ That room does not exist.",
-            ephemeral=True
-        )
-        return
-
-    rooms[room]["code"] = code
-    save_rooms(rooms)
 
     await interaction.response.send_message(
-        f"✅ Updated **{room}** passcode to `{code}`.",
+        "Select the room you want to update:",
+        view=RoomDropdownView(code),
         ephemeral=True
     )
-
 
 # -----------------------------
 # BALANCE
