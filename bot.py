@@ -182,49 +182,43 @@ class SetCodeSelect(discord.ui.Select):
 
         self.rooms_data = rooms_data
 
-    async def callback(self, interaction: discord.Interaction):
+   async def callback(self, interaction: discord.Interaction):
 
-        room = self.values[0]
+    room = self.values[0]
 
-        await interaction.response.send_message(
-            f"🔑 Selected **{room}**\nNow type the new code in chat.",
+    await interaction.response.send_message(
+        f"🔑 Selected **{room}**\nNow type the new 4-digit code in chat.",
+        ephemeral=True
+    )
+
+    def check(m):
+        return (
+            m.author.id == interaction.user.id and
+            m.channel.id == interaction.channel.id
+        )
+
+    try:
+        msg = await client.wait_for("message", check=check, timeout=60)
+        new_code = msg.content.strip()
+
+        # 4-digit validation
+        if not new_code.isdigit() or len(new_code) != 4:
+            await interaction.followup.send(
+                "❌ Code must be exactly 4 digits (0000–9999).",
+                ephemeral=True
+            )
+            return
+
+        rooms[room]["code"] = new_code
+        save_rooms(rooms)
+
+        await interaction.followup.send(
+            f"✅ Updated `{room}` code to `{new_code}`",
             ephemeral=True
         )
 
-        def check(m):
-            return (
-                m.author.id == interaction.user.id and
-                m.channel.id == interaction.channel.id
-            )
-
-        try:
-            msg = await client.wait_for("message", check=check, timeout=60)
-            new_code = msg.content.strip()
-
-# must be exactly 4 digits
-if not new_code.isdigit() or len(new_code) != 4:
-    await interaction.followup.send(
-        "❌ Code must be exactly a 4-digit number (0000–9999).",
-        ephemeral=True
-    )
-    return
-
-rooms[room]["code"] = new_code
-save_rooms(rooms)
-
-await interaction.followup.send(
-    f"✅ Updated `{room}` code to `{new_code}`",
-    ephemeral=True
-)
-
-            await interaction.followup.send(
-                f"✅ Updated `{room}` code to `{new_code}`",
-                ephemeral=True
-            )
-
-        except asyncio.TimeoutError:
-            await interaction.followup.send("⏳ Timed out.", ephemeral=True)
-
+    except asyncio.TimeoutError:
+        await interaction.followup.send("⏳ Timed out.", ephemeral=True)
 
 class SetCodeView(discord.ui.View):
     def __init__(self, rooms_data):
