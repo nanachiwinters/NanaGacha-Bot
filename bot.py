@@ -526,6 +526,60 @@ class RoomMenuView(discord.ui.View):
         )
         
 # -----------------------------
+# ECONOMY MENU
+# -----------------------------
+
+class EconomyMenuView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
+    @discord.ui.button(label="➕ Give Coins", style=discord.ButtonStyle.success)
+    async def give(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Give Coins coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="➖ Remove Coins", style=discord.ButtonStyle.danger)
+    async def remove(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Remove Coins coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="✏️ Set Coins", style=discord.ButtonStyle.primary)
+    async def setcoins(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 Set Coins coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="👛 View Balance", style=discord.ButtonStyle.secondary)
+    async def balance(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🚧 View Balance coming next!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="◀ Back", style=discord.ButtonStyle.danger, row=1)
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        status = "🟢 OPENED" if gacha_open else "🔴 CLOSED"
+
+        embed = discord.Embed(
+            title="🛠️ NanaGacha Admin Panel",
+            description=f"**Gacha Status:** {status}",
+            color=0x5865F2
+        )
+
+        embed.set_footer(text="Select an option below.")
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=AdminView()
+        )
+        
+# -----------------------------
 # ADMIN PANEL
 # -----------------------------
 
@@ -549,10 +603,17 @@ class AdminView(discord.ui.View):
 
     @discord.ui.button(label="💰 Economy", style=discord.ButtonStyle.success)
     async def economy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "🚧 Economy menu coming next!",
-            ephemeral=True
+
+        embed = discord.Embed(
+            title="💰 Economy Management",
+            description="Choose an option below.",
+            color=0x2ecc71
         )
+
+    await interaction.response.edit_message(
+        embed=embed,
+        view=EconomyMenuView()
+    )
 
     @discord.ui.button(label="🟢 Open", style=discord.ButtonStyle.secondary)
     async def open_button(self, interaction: discord.Interaction, button: discord.ui.Button):
