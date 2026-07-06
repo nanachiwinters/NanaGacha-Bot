@@ -9,8 +9,6 @@ import asyncio
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
-intents.message_content = True  # needed for waiting message input
-
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
@@ -80,8 +78,11 @@ class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
+    # NORMAL
     @discord.ui.button(label="🎰 Normal (1)", style=discord.ButtonStyle.primary)
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        global gacha_open
 
         uid = str(interaction.user.id)
 
@@ -98,8 +99,11 @@ class GachaView(discord.ui.View):
 
         await self.spin(interaction, lucky=False)
 
+    # LUCKY
     @discord.ui.button(label="🍀 Lucky (3)", style=discord.ButtonStyle.success)
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        global gacha_open
 
         uid = str(interaction.user.id)
 
@@ -115,6 +119,10 @@ class GachaView(discord.ui.View):
         save_coins(user_currency)
 
         await self.spin(interaction, lucky=True)
+
+    # -----------------------------
+    # SLOT SPIN
+    # -----------------------------
 
     async def spin(self, interaction, lucky=False):
 
@@ -159,89 +167,6 @@ class GachaView(discord.ui.View):
             await msg.edit(content="❌ Could not DM you")
 
 # -----------------------------
-# SETCODE SYSTEM
-# -----------------------------
-
-class SetCodeSelect(discord.ui.Select):
-    def __init__(self):
-
-        options = [
-            discord.SelectOption(
-                label=room,
-                description=f"Current code: {rooms[room].get('code', 'None')}"
-            )
-            for room in rooms.keys()
-        ]
-
-        super().__init__(
-            placeholder="Select a room...",
-            min_values=1,
-            max_values=1,
-            options=options
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-
-        room = self.values[0]
-
-        await interaction.response.send_message(
-            f"🔑 Selected **{room}**\nNow send a NEW 4-digit code in chat.",
-            ephemeral=True
-        )
-
-        def check(m):
-            return (
-                m.author.id == interaction.user.id and
-                m.channel.id == interaction.channel.id
-            )
-
-        try:
-            msg = await client.wait_for("message", check=check, timeout=60)
-            new_code = msg.content.strip()
-
-            if not new_code.isdigit() or len(new_code) != 4:
-                await interaction.followup.send(
-                    "❌ Code must be exactly 4 digits (0000–9999).",
-                    ephemeral=True
-                )
-                return
-
-            rooms[room]["code"] = new_code
-            save_rooms(rooms)
-
-            await interaction.followup.send(
-                f"✅ Updated `{room}` code to `{new_code}`",
-                ephemeral=True
-            )
-
-        except asyncio.TimeoutError:
-            await interaction.followup.send("⏳ Timed out.", ephemeral=True)
-
-
-class SetCodeView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=60)
-        self.add_item(SetCodeSelect())
-
-
-@tree.command(name="setcode", description="Change a room passcode (admin only)")
-async def setcode(interaction: discord.Interaction):
-
-    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
-        await interaction.response.send_message("❌ No permission", ephemeral=True)
-        return
-
-    if not rooms:
-        await interaction.response.send_message("❌ No rooms found", ephemeral=True)
-        return
-
-    await interaction.response.send_message(
-        "Select a room to edit:",
-        view=SetCodeView(),
-        ephemeral=True
-    )
-
-# -----------------------------
 # NANAGACHA
 # -----------------------------
 
@@ -279,7 +204,7 @@ async def daily(interaction: discord.Interaction):
     user_currency[uid] = user_currency.get(uid, 0) + 1
     save_coins(user_currency)
 
-    await interaction.response.send_message("🎟️ +1 coin", ephemeral=True)
+    await interaction.response.send_message("🪙 +1 coin", ephemeral=True)
 
 # -----------------------------
 # LEADERBOARD
@@ -320,6 +245,50 @@ async def givecoins(interaction: discord.Interaction, user: discord.Member, amou
     await interaction.response.send_message("✅ Done", ephemeral=True)
 
 # -----------------------------
+# SET ROOM CODE
+# -----------------------------
+
+@tree.command(name="setcode", description="Change the code for an existing room")
+@app_commands.describe(
+    room="The room to edit",
+    new_code="The new passcode"
+)
+async def setcode(
+    interaction: discord.Interaction,
+    room: str,
+    new_code: str
+):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message(
+            "❌ No permission.",
+            ephemeral=True
+        )
+        return
+
+    if room not in rooms:
+        await interaction.response.send_message(
+            f"❌ Room '{room}' doesn't exist.",
+            ephemeral=True
+        )
+        return
+
+    old_code = rooms[room]["code"]
+    rooms[room]["code"] = new_code
+    save_rooms(rooms)
+
+    embed = discord.Embed(
+        title="✅ Room Code Updated",
+        color=0x2ecc71
+    )
+
+    embed.add_field(name="Room", value=room, inline=False)
+    embed.add_field(name="Old Code", value=f"`{old_code}`", inline=True)
+    embed.add_field(name="New Code", value=f"`{new_code}`", inline=True)
+
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+# -----------------------------
 # OPEN / CLOSE GACHA
 # -----------------------------
 
@@ -333,7 +302,7 @@ async def open_gacha(interaction: discord.Interaction):
         return
 
     gacha_open = True
-    await interaction.response.send_message("🟢 Gacha OPENED")
+    await interaction.response.send_message("🟢 Gacha OPEN")
 
 @tree.command(name="close_gacha", description="Close gacha shop")
 async def close_gacha(interaction: discord.Interaction):
@@ -371,3 +340,5 @@ async def on_ready():
     print(f"Logged in as {client.user}")
 
 client.run(TOKEN)
+
+
