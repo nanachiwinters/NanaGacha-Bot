@@ -123,10 +123,10 @@ class GachaView(discord.ui.View):
                 await msg.edit(content=f)
                 await asyncio.sleep(0.12)
 
-        pool = list(rooms.keys())
-
-        if lucky:
-            pool = [r for r in rooms if rooms[r].get("lucky")]
+      if lucky:
+    pool = [r for r in rooms if rooms[r].get("lucky") is True]
+else:
+    pool = [r for r in rooms if not rooms[r].get("lucky", False)]
 
         room = random.choices(
             pool,
