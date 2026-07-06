@@ -244,12 +244,19 @@ class GachaView(discord.ui.View):
 
         right = final
 
+        rarity_text = {
+            "Common": "🟢 Common!",
+            "Rare": "🔵 Rare!",
+            "Epic": "🟣 Epic!",
+            "Legendary": "🟡 LEGENDARY!! ✨"
+        }
+
         await msg.edit(
             content=
             "━━━━━━━━━━━━━━━━━━\n"
             "🎰 **NanaGacha**\n\n"
             f"〔 {left} │ {middle} │ {right} 〕\n\n"
-            "✨ JACKPOT! ✨\n"
+            f"{rarity_text[rarity]}\n"
             "━━━━━━━━━━━━━━━━━━"
         )
 
