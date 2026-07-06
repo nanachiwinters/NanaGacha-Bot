@@ -58,6 +58,13 @@ RARITY_COLORS = {
     "Legendary": 0xf1c40f
 }
 
+RARITY_EMOJI = {
+    "Common": "🟢",
+    "Rare": "🔵",
+    "Epic": "🟣",
+    "Legendary": "🟡"
+}
+
 # -----------------------------
 # GACHA VIEW
 # -----------------------------
@@ -69,13 +76,13 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="🎰 Normal Roll (1 coin)", style=discord.ButtonStyle.primary)
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        user_id = str(interaction.user.id)
+        uid = str(interaction.user.id)
 
-        if user_currency.get(user_id, 0) < 1:
+        if user_currency.get(uid, 0) < 1:
             await interaction.response.send_message("❌ Not enough coins.", ephemeral=True)
             return
 
-        user_currency[user_id] -= 1
+        user_currency[uid] -= 1
         save_coins(user_currency)
 
         await self.spin(interaction, lucky=False)
@@ -83,33 +90,38 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="🍀 Lucky Roll (3 coins)", style=discord.ButtonStyle.success)
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        user_id = str(interaction.user.id)
+        uid = str(interaction.user.id)
 
-        if user_currency.get(user_id, 0) < 3:
+        if user_currency.get(uid, 0) < 3:
             await interaction.response.send_message("❌ Not enough coins.", ephemeral=True)
             return
 
-        user_currency[user_id] -= 3
+        user_currency[uid] -= 3
         save_coins(user_currency)
 
         await self.spin(interaction, lucky=True)
 
     # -----------------------------
-    # 🎡 SPINNING ANIMATION
+    # 🎡 SPIN (IMPROVED SPEED)
     # -----------------------------
 
     async def spin(self, interaction, lucky=False):
 
-        await interaction.response.send_message("🎡 Spinning roulette...", ephemeral=True)
-
+        await interaction.response.send_message("🎡 Spinning...", ephemeral=True)
         msg = await interaction.original_response()
 
-        spin_texts = ["🎡 Spinning.", "🎡 Spinning..", "🎡 Spinning..."]
+        frames = [
+            "🎡 Spinning",
+            "🎡 Spinning.",
+            "🎡 Spinning..",
+            "🎡 Spinning..."
+        ]
 
-        for _ in range(3):
-            for t in spin_texts:
-                await msg.edit(content=t)
-                await asyncio.sleep(0.2)
+        # faster + smoother animation
+        for _ in range(2):
+            for f in frames:
+                await msg.edit(content=f)
+                await asyncio.sleep(0.12)
 
         pool = list(rooms.keys())
 
@@ -127,22 +139,13 @@ class GachaView(discord.ui.View):
         code = data["code"]
 
         embed = discord.Embed(
-            title=f"{self.get_emoji(rarity)} {rarity} ROLL",
+            title=f"{RARITY_EMOJI.get(rarity)} {rarity.upper()} ROLL",
             description=f"**{room}**\n🔑 Code: `{code}`",
             color=RARITY_COLORS.get(rarity, 0x3498db)
         )
 
         await interaction.user.send(embed=embed)
-
         await msg.edit(content="📩 Check your DMs!")
-
-    def get_emoji(self, rarity):
-        return {
-            "Common": "🟢",
-            "Rare": "🔵",
-            "Epic": "🟣",
-            "Legendary": "🟡"
-        }.get(rarity, "⚪")
 
 # -----------------------------
 # NANAGACHA
@@ -150,8 +153,6 @@ class GachaView(discord.ui.View):
 
 @tree.command(name="nanagacha", description="Play Nanagacha")
 async def nanagacha(interaction: discord.Interaction):
-
-    view = GachaView()
 
     embed = discord.Embed(
         title="🎰 NANAGACHA",
@@ -161,7 +162,61 @@ async def nanagacha(interaction: discord.Interaction):
 
     embed.set_footer(text="Normal = 1 coin | Lucky = 3 coins")
 
-    await interaction.response.send_message(embed=embed, view=view)
+    await interaction.response.send_message(embed=embed, view=GachaView())
+
+# -----------------------------
+# SETCODE (RESTORED)
+# -----------------------------
+
+class RoomSelect(discord.ui.Select):
+    def __init__(self, code):
+
+        self.code = code
+
+        options = [
+            discord.SelectOption(label=r)
+            for r in rooms.keys()
+        ]
+
+        super().__init__(
+            placeholder="Choose a room...",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+
+        if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+            await interaction.response.send_message("❌ No permission.", ephemeral=True)
+            return
+
+        room = self.values[0]
+        rooms[room]["code"] = self.code
+        save_rooms(rooms)
+
+        await interaction.response.send_message(
+            f"✅ Updated **{room}** code to `{self.code}`",
+            ephemeral=True
+        )
+
+class RoomDropdownView(discord.ui.View):
+    def __init__(self, code):
+        super().__init__(timeout=60)
+        self.add_item(RoomSelect(code))
+
+@tree.command(name="setcode", description="Admin: change room code")
+async def setcode(interaction: discord.Interaction, code: str):
+
+    if ALLOWED_ROLE_ID not in [role.id for role in interaction.user.roles]:
+        await interaction.response.send_message("❌ No permission.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        "📋 Select the room to update:",
+        view=RoomDropdownView(code),
+        ephemeral=True
+    )
 
 # -----------------------------
 # DAILY
@@ -170,18 +225,16 @@ async def nanagacha(interaction: discord.Interaction):
 @tree.command(name="daily", description="Claim daily coin")
 async def daily(interaction: discord.Interaction):
 
-    user_id = str(interaction.user.id)
+    uid = str(interaction.user.id)
     now = time.time()
 
-    last = daily_claims.get(user_id, 0)
-
-    if now - last < COOLDOWN:
-        remaining = int(COOLDOWN - (now - last))
+    if now - daily_claims.get(uid, 0) < COOLDOWN:
+        remaining = int(COOLDOWN - (now - daily_claims[uid]))
         await interaction.response.send_message(f"⏳ Try again in {remaining//3600}h", ephemeral=True)
         return
 
-    daily_claims[user_id] = now
-    user_currency[user_id] = user_currency.get(user_id, 0) + 1
+    daily_claims[uid] = now
+    user_currency[uid] = user_currency.get(uid, 0) + 1
     save_coins(user_currency)
 
     await interaction.response.send_message("🎟️ +1 coin", ephemeral=True)
@@ -190,14 +243,14 @@ async def daily(interaction: discord.Interaction):
 # LEADERBOARD
 # -----------------------------
 
-@tree.command(name="leaderboard", description="Top coin players")
+@tree.command(name="leaderboard", description="Top players")
 async def leaderboard(interaction: discord.Interaction):
 
-    sorted_users = sorted(user_currency.items(), key=lambda x: x[1], reverse=True)[:10]
+    top = sorted(user_currency.items(), key=lambda x: x[1], reverse=True)[:10]
 
     desc = ""
-    for i, (uid, coins) in enumerate(sorted_users, start=1):
-        desc += f"**{i}.** <@{uid}> — {coins} coins\n"
+    for i, (uid, coins) in enumerate(top, start=1):
+        desc += f"**{i}.** <@{uid}> — {coins}\n"
 
     embed = discord.Embed(
         title="🏆 LEADERBOARD",
