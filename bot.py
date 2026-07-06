@@ -545,14 +545,19 @@ class GiveCoinsModal(discord.ui.Modal, title="➕ Give Coins"):
 
     async def on_submit(self, interaction: discord.Interaction):
 
-        try:
-            user = await client.fetch_user(int(self.user_id.value))
-        except:
-            await interaction.response.send_message(
-                "❌ Invalid User ID.",
-                ephemeral=True
-            )
-            return
+raw = self.user_id.value.strip()
+
+# Convert a Discord mention into an ID
+raw = raw.replace("<@", "").replace("!", "").replace(">", "")
+
+try:
+    user = await client.fetch_user(int(raw))
+except:
+    await interaction.response.send_message(
+        "❌ Invalid user.",
+        ephemeral=True
+    )
+    return
 
         try:
             amount = int(self.amount.value)
