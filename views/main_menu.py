@@ -1,5 +1,9 @@
 import discord
 
+from views.gacha import GachaMenu
+from views.economy import EconomyMenu
+from views.roles import RolesMenu
+
 class MainMenu(discord.ui.View):
 
     @discord.ui.button(
