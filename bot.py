@@ -280,7 +280,7 @@ class RolesMenu(discord.ui.View):
             )
             return
 
-        role_info = roles_data.get(role.name)
+        role_info = roles_data.get(role.name, {})
 
         description = role_info.get(
             "description",
@@ -306,13 +306,17 @@ class RolesMenu(discord.ui.View):
             if role in m.roles
         )
 
-        permissions = [
-            "• " + name.replace("_", " ").title()
-            for name, value in role.permissions
-            if value
-        ]
+        # Clean permissions display
+        if role.permissions.administrator:
+            permission_text = "• Administrator (All Permissions)"
+        else:
+            permissions = [
+                "• " + name.replace("_", " ").title()
+                for name, value in role.permissions
+                if value
+            ]
 
-        permission_text = "\n".join(permissions) or "None"
+            permission_text = "\n".join(permissions) or "None"
 
         embed = discord.Embed(
             title=f"⭐ {role.name}",
@@ -391,29 +395,6 @@ class RolesMenu(discord.ui.View):
         await interaction.response.edit_message(
             embed=embed,
             view=MainMenu()
-        )
-
-# ============================================================
-# MY ROLE MENU
-# ============================================================
-
-class MyRoleMenu(discord.ui.View):
-
-    @discord.ui.button(
-        label="⬅ Back",
-        style=discord.ButtonStyle.danger
-    )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        embed = discord.Embed(
-            title="👤 Roles",
-            description="View your role, search for roles, or browse the role hierarchy.",
-            color=0x9B59B6
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=RolesMenu()
         )
         
 # -----------------------------
