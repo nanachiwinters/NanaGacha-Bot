@@ -173,7 +173,7 @@ class EconomyMenu(discord.ui.View):
 
     @discord.ui.button(
         label="⬅ Back",
-        style=discord.ButtonStyle.danger
+        style=discord.ButtonStyle.secondary
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
