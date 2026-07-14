@@ -537,7 +537,6 @@ async def herald(interaction: discord.Interaction):
     name="setup",
     description="Creates or updates the Nachi menu."
 )
-@app_commands.default_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
 
     embed = discord.Embed(
