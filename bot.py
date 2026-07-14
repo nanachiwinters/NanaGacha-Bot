@@ -240,9 +240,25 @@ class RolesMenu(discord.ui.View):
     )
     async def my_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_message(
-            "👤 My Role coming soon!",
-            ephemeral=True
+        member = interaction.user
+
+        if len(member.roles) > 1:
+            role_name = member.top_role.name
+        else:
+            role_name = "No Role"
+
+        embed = discord.Embed(
+            title="👤 Your Role",
+            description=(
+                f"**Current Role:** {role_name}\n\n"
+                "*Role descriptions coming soon.*"
+            ),
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=MyRoleMenu()
         )
 
     @discord.ui.button(
@@ -282,6 +298,29 @@ class RolesMenu(discord.ui.View):
         await interaction.response.edit_message(
             embed=embed,
             view=MainMenu()
+        )
+        
+# ============================================================
+# MY ROLE MENU
+# ============================================================
+
+class MyRoleMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="👤 Roles",
+            description="View your role, search for roles, or browse the role hierarchy.",
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RolesMenu()
         )
         
 # -----------------------------
