@@ -2,11 +2,14 @@ import discord
 from discord import app_commands
 
 from config import TOKEN
+from storage import load_coins, save_coins
 
 intents = discord.Intents.default()
 
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
+
+coins = load_coins()
 
 
 # -----------------------------
