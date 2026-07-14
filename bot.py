@@ -9,6 +9,41 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 
+# -----------------------------
+# MAIN MENU
+# -----------------------------
+
+class MainMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="🎰 Gacha",
+        style=discord.ButtonStyle.primary
+    )
+    async def gacha(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        await interaction.response.send_message(
+            "🎰 Gacha coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="🪙 Economy",
+        style=discord.ButtonStyle.success
+    )
+    async def economy(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        await interaction.response.send_message(
+            "🪙 Economy coming soon!",
+            ephemeral=True
+        )
+
+
 @tree.command(name="menu", description="Open the main menu")
 async def menu(interaction: discord.Interaction):
 
@@ -18,7 +53,10 @@ async def menu(interaction: discord.Interaction):
         color=0x5865F2
     )
 
-    await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(
+        embed=embed,
+        view=MainMenu()
+    )
 
 
 @client.event
