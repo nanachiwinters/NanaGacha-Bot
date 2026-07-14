@@ -21,9 +21,15 @@ class MainMenu(discord.ui.View):
     )
     async def gacha(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_message(
-            "🎰 Gacha coming soon!",
-            ephemeral=True
+        embed = discord.Embed(
+            title="🎰 Gacha",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=GachaMenu()
         )
 
     @discord.ui.button(
@@ -32,12 +38,107 @@ class MainMenu(discord.ui.View):
     )
     async def economy(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        embed = discord.Embed(
+            title="🪙 Economy",
+            description="Choose an option below.",
+            color=0x2ECC71
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=EconomyMenu()
+        )
+
+# -----------------------------
+# GachaMenu
+# -----------------------------
+
+class GachaMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="Normal Spin",
+        style=discord.ButtonStyle.primary
+    )
+    async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
+
         await interaction.response.send_message(
-            "🪙 Economy coming soon!",
+            "🎰 Normal Gacha coming soon!",
             ephemeral=True
         )
 
+    @discord.ui.button(
+        label="Lucky Spin",
+        style=discord.ButtonStyle.success
+    )
+    async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        await interaction.response.send_message(
+            "🍀 Lucky Gacha coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.secondary
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="Main Menu",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=MainMenu()
+        )
+
+# ============================================================
+# ECONOMY MENU
+# ============================================================
+
+class EconomyMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="🎁 Daily",
+        style=discord.ButtonStyle.primary
+    )
+    async def daily(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "🎁 Daily coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="🏆 Leaderboard",
+        style=discord.ButtonStyle.success
+    )
+    async def leaderboard(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "🏆 Leaderboard coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.secondary
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="Main Menu",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=MainMenu()
+        )
+        
 # -----------------------------
 # OPEN MENU BUTTON
 # -----------------------------
