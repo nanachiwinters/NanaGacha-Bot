@@ -317,16 +317,96 @@ class MyRoleMenu(discord.ui.View):
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        embed = discord.Embed(
-            title="👤 Roles",
-            description="View your role, search for roles, or browse the role hierarchy.",
-            color=0x9B59B6
+        member = interaction.user
+
+if len(member.roles) > 1:
+    role = member.top_role
+else:
+    await interaction.response.send_message(
+        "❌ You don't have a role.",
+        ephemeral=True
+    )
+    return
+
+role_info = roles_data.get(
+    role.name,
+    {
+        "description": "No description has been set.",
+        "promotion_requirements": [],
+        "responsibilities": []
+    }
+)
+
+description = role_info["description"]
+
+promotion = "\n".join(
+    f"• {req}" for req in role_info["promotion_requirements"]
+)
+
+if not promotion:
+    promotion = "None"
+
+responsibilities = "\n".join(
+    f"• {task}" for task in role_info["responsibilities"]
+)
+
+if not responsibilities:
+    responsibilities = "None"
+
+member_count = sum(
+    1 for m in interaction.guild.members
+    if role in m.roles
+)
+
+permissions = []
+
+for name, value in role.permissions:
+    if value:
+        permissions.append(
+            "• " + name.replace("_", " ").title()
         )
 
-        await interaction.response.edit_message(
-            embed=embed,
-            view=RolesMenu()
-        )
+permission_text = "\n".join(permissions)
+
+embed = discord.Embed(
+    title=role.name,
+    color=role.color
+)
+
+embed.add_field(
+    name="📖 Description",
+    value=description,
+    inline=False
+)
+
+embed.add_field(
+    name="👥 Members",
+    value=str(member_count),
+    inline=False
+)
+
+embed.add_field(
+    name="⭐ Promotion Requirements",
+    value=promotion,
+    inline=False
+)
+
+embed.add_field(
+    name="🛡 Responsibilities",
+    value=responsibilities,
+    inline=False
+)
+
+embed.add_field(
+    name="🔑 Discord Permissions",
+    value=permission_text,
+    inline=False
+)
+
+await interaction.response.edit_message(
+    embed=embed,
+    view=MyRoleMenu()
+)
         
 # -----------------------------
 # OPEN MENU BUTTON
