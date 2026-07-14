@@ -18,6 +18,7 @@ tree = app_commands.CommandTree(client)
 
 coins = load_coins()
 roles_data = load_roles()
+print("roles_data =", repr(roles_data))
 
 # ============================================================
 # MAIN MENU
