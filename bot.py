@@ -11,6 +11,10 @@ tree = app_commands.CommandTree(client)
 
 coins = load_coins()
 
+# ============================================================
+# MAIN MENU
+# ============================================================
+
 class MainMenu(discord.ui.View):
 
     @discord.ui.button(
@@ -63,6 +67,10 @@ class MainMenu(discord.ui.View):
             embed=embed,
             view=RolesMenu()
         )
+
+# ============================================================
+# GACHA MENU
+# ============================================================
 
 class GachaMenu(discord.ui.View):
 
