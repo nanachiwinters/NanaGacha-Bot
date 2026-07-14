@@ -339,7 +339,55 @@ def build_role_embed(role, guild):
     )
 
     return embed
-    
+
+# ============================================================
+# SEARCH ROLE MODAL
+# ============================================================
+
+class SearchRoleModal(discord.ui.Modal, title="Search Role"):
+
+    role_name = discord.ui.TextInput(
+        label="Role Name",
+        placeholder="Enter a role name...",
+        required=True,
+        max_length=100
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        search = self.role_name.value.lower()
+
+        found_role = None
+
+        for role in interaction.guild.roles:
+            if role.name.lower() == search:
+                found_role = role
+                break
+
+        if found_role is None:
+
+            for role in interaction.guild.roles:
+                if search in role.name.lower():
+                    found_role = role
+                    break
+
+        if found_role is None or found_role.name not in roles_data:
+            await interaction.response.send_message(
+                "❌ Role not found.",
+                ephemeral=True
+            )
+            return
+
+        embed = build_role_embed(
+            found_role,
+            interaction.guild
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            ephemeral=True
+        )
+        
 # ============================================================
 # ROLES MENU
 # ============================================================
@@ -377,9 +425,8 @@ class RolesMenu(discord.ui.View):
     )
     async def search_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_message(
-            "🔎 Search Role coming soon!",
-            ephemeral=True
+        await interaction.response.send_modal(
+            SearchRoleModal()
         )
 
     @discord.ui.button(
