@@ -105,4 +105,12 @@ async def setup(interaction: discord.Interaction):
     await interaction.response.send_message(
         "✅ Nachi menu created!",
         ephemeral=True
+        
     )
+@client.event
+async def on_ready():
+    await tree.sync()
+    print(f"✅ {client.user} is online!")
+
+
+client.run(TOKEN)
