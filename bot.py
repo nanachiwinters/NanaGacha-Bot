@@ -18,6 +18,16 @@ coins = load_coins()
 roles_data = load_roles()
 
 # ============================================================
+# ROLE SETTINGS
+# ============================================================
+
+IGNORED_ROLES = [
+
+    "Moderator",
+    "Server Booster"
+]
+
+# ============================================================
 # MAIN MENU
 # ============================================================
 
@@ -319,11 +329,17 @@ class MyRoleMenu(discord.ui.View):
 
         member = interaction.user
 
-        if len(member.roles) > 1:
-            role = member.top_role
-        else:
+        # Find the highest role that exists in roles_data
+        role = None
+
+        for r in reversed(member.roles):
+            if r.name in roles_data:
+                role = r
+                break
+
+        if role is None:
             await interaction.response.send_message(
-                "❌ You don't have a role.",
+                "❌ You don't have a registered role.",
                 ephemeral=True
             )
             return
