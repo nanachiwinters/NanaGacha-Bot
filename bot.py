@@ -12,8 +12,6 @@ tree = app_commands.CommandTree(client)
 
 coins = load_coins()
 
-
-
 # -----------------------------
 # GachaMenu
 # -----------------------------
