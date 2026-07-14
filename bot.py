@@ -10,7 +10,7 @@ tree = app_commands.CommandTree(client)
 
 
 # -----------------------------
-# MAIN MENU
+# PERSONAL MENU
 # -----------------------------
 
 class MainMenu(discord.ui.View):
@@ -32,47 +32,23 @@ class MainMenu(discord.ui.View):
     )
     async def economy(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        embed = discord.Embed(
-            title="🪙 Economy",
-            description="Choose an option below.",
-            color=0x2ECC71
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=EconomyMenu()
+        await interaction.response.send_message(
+            "🪙 Economy coming soon!",
+            ephemeral=True
         )
 
 
-class EconomyMenu(discord.ui.View):
+# -----------------------------
+# OPEN MENU BUTTON
+# -----------------------------
+
+class OpenMenu(discord.ui.View):
 
     @discord.ui.button(
-        label="🎁 Daily",
+        label="📋 Open Menu",
         style=discord.ButtonStyle.primary
     )
-    async def daily(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "🎁 Daily coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="🏆 Leaderboard",
-        style=discord.ButtonStyle.secondary
-    )
-    async def leaderboard(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "🏆 Leaderboard coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="⬅ Back",
-        style=discord.ButtonStyle.secondary
-    )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def open_menu(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         embed = discord.Embed(
             title="Main Menu",
@@ -80,31 +56,53 @@ class EconomyMenu(discord.ui.View):
             color=0x5865F2
         )
 
-        await interaction.response.edit_message(
+        await interaction.response.send_message(
             embed=embed,
-            view=MainMenu()
+            view=MainMenu(),
+            ephemeral=True
         )
 
 
-@tree.command(name="menu", description="Open the main menu")
-async def menu(interaction: discord.Interaction):
+# -----------------------------
+# SETUP COMMAND
+# -----------------------------
+
+@tree.command(
+    name="setup",
+    description="Creates or updates the Nachi menu."
+)
+@app_commands.default_permissions(administrator=True)
+async def setup(interaction: discord.Interaction):
 
     embed = discord.Embed(
-        title="Main Menu",
-        description="Choose an option below.",
+        title="🤖 Nachi",
+        description="Access Nachi's features using the button below.",
         color=0x5865F2
     )
 
-    await interaction.response.send_message(
+    async for message in interaction.channel.history(limit=50):
+        if (
+            message.author == client.user
+            and message.embeds
+            and message.embeds[0].title == "🤖 Nachi"
+        ):
+            await message.edit(
+                embed=embed,
+                view=OpenMenu()
+            )
+
+            await interaction.response.send_message(
+                "✅ Existing Nachi menu updated!",
+                ephemeral=True
+            )
+            return
+
+    await interaction.channel.send(
         embed=embed,
-        view=MainMenu()
+        view=OpenMenu()
     )
 
-
-@client.event
-async def on_ready():
-    await tree.sync()
-    print(f"✅ {client.user} is online!")
-
-
-client.run(TOKEN)
+    await interaction.response.send_message(
+        "✅ Nachi menu created!",
+        ephemeral=True
+    )
