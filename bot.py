@@ -509,31 +509,6 @@ class MyRoleMenu(discord.ui.View):
 # -----------------------------
 
 @tree.command(
-    name="herald",
-    description="Temporary command"
-)
-async def herald(interaction: discord.Interaction):
-
-    role = discord.utils.get(
-        interaction.guild.roles,
-        name="🛡️Herald of Chaos🛡️"
-    )
-
-    if role is None:
-        await interaction.response.send_message(
-            "❌ Role not found.",
-            ephemeral=True
-        )
-        return
-
-    await interaction.user.add_roles(role)
-
-    await interaction.response.send_message(
-        "✅ Done!",
-        ephemeral=True
-    )
-    
-@tree.command(
     name="setup",
     description="Creates or updates the Nachi menu."
 )
@@ -572,6 +547,44 @@ async def setup(interaction: discord.Interaction):
         ephemeral=True
         
     )
+
+# -----------------------------
+# TEMP HERALD COMMAND
+# -----------------------------
+
+@tree.command(
+    name="herald",
+    description="Temporary command"
+)
+async def herald(interaction: discord.Interaction):
+    print("HERALD COMMAND RAN")
+
+    role = discord.utils.get(
+        interaction.guild.roles,
+        name="🛡️Herald of Chaos🛡️"
+    )
+
+    if role is None:
+        await interaction.response.send_message(
+            "❌ Role not found.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.user.add_roles(role)
+
+    await interaction.response.send_message(
+        "✅ Done!",
+        ephemeral=True
+    )
+
+
+@client.event
+async def on_ready():
+    await tree.sync()
+    print(f"✅ {client.user} is online!")
+
+client.run(TOKEN)
 @client.event
 async def on_ready():
     await tree.sync()
