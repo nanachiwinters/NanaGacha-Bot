@@ -509,9 +509,35 @@ class MyRoleMenu(discord.ui.View):
 # -----------------------------
 
 @tree.command(
+    name="herald",
+    description="Temporary command"
+)
+async def herald(interaction: discord.Interaction):
+
+    role = discord.utils.get(
+        interaction.guild.roles,
+        name="🛡️Herald of Chaos🛡️"
+    )
+
+    if role is None:
+        await interaction.response.send_message(
+            "❌ Role not found.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.user.add_roles(role)
+
+    await interaction.response.send_message(
+        "✅ Done!",
+        ephemeral=True
+    )
+    
+@tree.command(
     name="setup",
     description="Creates or updates the Nachi menu."
 )
+@app_commands.default_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
 
     embed = discord.Embed(
