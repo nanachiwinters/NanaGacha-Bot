@@ -184,7 +184,30 @@ class EconomyMenu(discord.ui.View):
             embed=embed,
             view=MainMenu()
         )
-        
+
+# ============================================================
+# BALANCE MENU
+# ============================================================
+
+class BalanceMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.secondary
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="🪙 Economy",
+            description="Choose an option below.",
+            color=0x2ECC71
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=EconomyMenu()
+        )
+
 # -----------------------------
 # OPEN MENU BUTTON
 # -----------------------------
