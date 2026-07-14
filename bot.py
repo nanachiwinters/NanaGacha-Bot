@@ -18,16 +18,6 @@ coins = load_coins()
 roles_data = load_roles()
 
 # ============================================================
-# ROLE SETTINGS
-# ============================================================
-
-IGNORED_ROLES = [
-
-    "Moderator",
-    "Server Booster"
-]
-
-# ============================================================
 # MAIN MENU
 # ============================================================
 
@@ -257,8 +247,16 @@ class RolesMenu(discord.ui.View):
 
         member = interaction.user
 
-        if len(member.roles) > 1:
-            role_name = member.top_role.name
+        role = None
+
+        # Find highest role that exists in roles_data
+        for r in reversed(member.roles):
+            if r.name in roles_data:
+                role = r
+                break
+
+        if role:
+            role_name = role.name
         else:
             role_name = "No Role"
 
@@ -266,7 +264,7 @@ class RolesMenu(discord.ui.View):
             title="👤 Your Role",
             description=(
                 f"**Current Role:** {role_name}\n\n"
-                "*Role descriptions coming soon.*"
+                "Press below to view your role information."
             ),
             color=0x9B59B6
         )
@@ -275,6 +273,7 @@ class RolesMenu(discord.ui.View):
             embed=embed,
             view=MyRoleMenu()
         )
+
 
     @discord.ui.button(
         label="🔎 Search Role",
@@ -287,6 +286,7 @@ class RolesMenu(discord.ui.View):
             ephemeral=True
         )
 
+
     @discord.ui.button(
         label="📜 Role Hierarchy",
         style=discord.ButtonStyle.secondary
@@ -297,6 +297,7 @@ class RolesMenu(discord.ui.View):
             "📜 Role Hierarchy coming soon!",
             ephemeral=True
         )
+
 
     @discord.ui.button(
         label="⬅ Back",
@@ -329,11 +330,21 @@ class MyRoleMenu(discord.ui.View):
 
         member = interaction.user
 
-        # Find the highest role that exists in roles_data
+        IGNORED_ROLES = [
+            "Moderator",
+            "Admin",
+            "Owner",
+            "Bots",
+            "Server Booster"
+        ]
+
         role = None
 
         for r in reversed(member.roles):
-            if r.name in roles_data:
+            if (
+                r.name in roles_data
+                and r.name not in IGNORED_ROLES
+            ):
                 role = r
                 break
 
@@ -357,17 +368,11 @@ class MyRoleMenu(discord.ui.View):
 
         promotion = "\n".join(
             f"• {req}" for req in role_info["promotion_requirements"]
-        )
-
-        if not promotion:
-            promotion = "None"
+        ) or "None"
 
         responsibilities = "\n".join(
             f"• {task}" for task in role_info["responsibilities"]
-        )
-
-        if not responsibilities:
-            responsibilities = "None"
+        ) or "None"
 
         member_count = sum(
             1 for m in interaction.guild.members
@@ -382,10 +387,7 @@ class MyRoleMenu(discord.ui.View):
                     "• " + name.replace("_", " ").title()
                 )
 
-        permission_text = "\n".join(permissions)
-
-        if not permission_text:
-            permission_text = "None"
+        permission_text = "\n".join(permissions) or "None"
 
         embed = discord.Embed(
             title=f"⭐ {role.name}",
