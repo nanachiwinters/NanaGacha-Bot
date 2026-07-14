@@ -433,6 +433,29 @@ class OpenMenu(discord.ui.View):
             view=MainMenu(),
             ephemeral=True
         )
+
+# ============================================================
+# MY ROLE MENU
+# ============================================================
+
+class MyRoleMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="👤 Roles",
+            description="View your role, search for roles, or browse the role hierarchy.",
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RolesMenu()
+        )
         
 # -----------------------------
 # SETUP COMMAND
