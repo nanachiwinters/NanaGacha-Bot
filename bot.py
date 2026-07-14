@@ -236,7 +236,7 @@ class BalanceMenu(discord.ui.View):
         )
 
 # ============================================================
-# ROLES MENU
+# ROLE HELPERS
 # ============================================================
 
 IGNORED_ROLES = {
@@ -250,9 +250,10 @@ IGNORED_ROLES = {
 
 
 def get_user_role(member):
-    """Returns the highest registered role from roles.json."""
+    """Returns the user's highest custom role."""
 
     for role in reversed(member.roles):
+
         if role.name in IGNORED_ROLES:
             continue
 
@@ -262,6 +263,87 @@ def get_user_role(member):
     return None
 
 
+def build_role_embed(role, guild):
+
+    role_info = roles_data.get(role.name, {})
+
+    description = role_info.get(
+        "description",
+        "No description has been set."
+    )
+
+    promotion = "\n".join(
+        f"• {x}"
+        for x in role_info.get(
+            "promotion_requirements",
+            []
+        )
+    ) or "None"
+
+    responsibilities = "\n".join(
+        f"• {x}"
+        for x in role_info.get(
+            "responsibilities",
+            []
+        )
+    ) or "None"
+
+    member_count = sum(
+        1
+        for member in guild.members
+        if role in member.roles
+    )
+
+    if role.permissions.administrator:
+        permission_text = "• Administrator (All Permissions)"
+    else:
+        permission_text = "\n".join(
+            "• " + name.replace("_", " ").title()
+            for name, value in role.permissions
+            if value
+        ) or "None"
+
+    embed = discord.Embed(
+        title=f"⭐ {role.name}",
+        color=role.color
+    )
+
+    embed.add_field(
+        name="📖 Description",
+        value=description,
+        inline=False
+    )
+
+    embed.add_field(
+        name="👥 Members",
+        value=str(member_count),
+        inline=False
+    )
+
+    embed.add_field(
+        name="⭐ Promotion Requirements",
+        value=promotion,
+        inline=False
+    )
+
+    embed.add_field(
+        name="🛡 Responsibilities",
+        value=responsibilities,
+        inline=False
+    )
+
+    embed.add_field(
+        name="🔑 Discord Permissions",
+        value=permission_text,
+        inline=False
+    )
+
+    return embed
+    
+# ============================================================
+# ROLES MENU
+# ============================================================
+
 class RolesMenu(discord.ui.View):
 
     @discord.ui.button(
@@ -270,8 +352,7 @@ class RolesMenu(discord.ui.View):
     )
     async def my_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        member = interaction.user
-        role = get_user_role(member)
+        role = get_user_role(interaction.user)
 
         if role is None:
             await interaction.response.send_message(
@@ -280,77 +361,9 @@ class RolesMenu(discord.ui.View):
             )
             return
 
-        role_info = roles_data.get(role.name, {})
-
-        description = role_info.get(
-            "description",
-            "No description has been set."
-        )
-
-        promotion = "\n".join(
-            f"• {x}" for x in role_info.get(
-                "promotion_requirements",
-                []
-            )
-        ) or "None"
-
-        responsibilities = "\n".join(
-            f"• {x}" for x in role_info.get(
-                "responsibilities",
-                []
-            )
-        ) or "None"
-
-        member_count = sum(
-            1 for m in interaction.guild.members
-            if role in m.roles
-        )
-
-        # Clean permissions display
-        if role.permissions.administrator:
-            permission_text = "• Administrator (All Permissions)"
-        else:
-            permissions = [
-                "• " + name.replace("_", " ").title()
-                for name, value in role.permissions
-                if value
-            ]
-
-            permission_text = "\n".join(permissions) or "None"
-
-        embed = discord.Embed(
-            title=f"⭐ {role.name}",
-            color=role.color
-        )
-
-        embed.add_field(
-            name="📖 Description",
-            value=description,
-            inline=False
-        )
-
-        embed.add_field(
-            name="👥 Members",
-            value=str(member_count),
-            inline=False
-        )
-
-        embed.add_field(
-            name="⭐ Promotion Requirements",
-            value=promotion,
-            inline=False
-        )
-
-        embed.add_field(
-            name="🛡 Responsibilities",
-            value=responsibilities,
-            inline=False
-        )
-
-        embed.add_field(
-            name="🔑 Discord Permissions",
-            value=permission_text,
-            inline=False
+        embed = build_role_embed(
+            role,
+            interaction.guild
         )
 
         await interaction.response.edit_message(
