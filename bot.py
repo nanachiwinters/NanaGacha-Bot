@@ -118,7 +118,10 @@ class EconomyMenu(discord.ui.View):
 
         embed = discord.Embed(
             title="💰 Your Balance",
-            description=f"You currently have **{coins[user_id]}** 🪙 coin(s).",
+            description=(
+                f"🪙 **Coins:** {coins[user_id]}\n\n"
+                "Use your coins to purchase Gacha spins."
+            ),
             color=0xFFD700
         )
 
@@ -193,7 +196,7 @@ class BalanceMenu(discord.ui.View):
 
     @discord.ui.button(
         label="⬅ Back",
-        style=discord.ButtonStyle.secondary
+        style=discord.ButtonStyle.primary
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
