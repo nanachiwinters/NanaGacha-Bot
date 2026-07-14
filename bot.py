@@ -10,6 +10,8 @@ from storage import (
 )
 
 intents = discord.Intents.default()
+intents.guilds = True
+intents.members = True
 
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
