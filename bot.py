@@ -415,7 +415,31 @@ class MyRoleMenu(discord.ui.View):
             embed=embed,
             view=RolesMenu()
         )
+        
+# -----------------------------
+# OPEN MENU BUTTON
+# -----------------------------
 
+class OpenMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="📋 Open Menu",
+        style=discord.ButtonStyle.primary
+    )
+    async def open_menu(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="Main Menu",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            view=MainMenu(),
+            ephemeral=True
+        )
+        
 # -----------------------------
 # SETUP COMMAND
 # -----------------------------
