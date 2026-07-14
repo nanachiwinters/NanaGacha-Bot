@@ -26,7 +26,7 @@ class MainMenu(discord.ui.View):
 
         embed = discord.Embed(
             title="🎰 Gacha",
-            description="Choose an option below.",
+            description="Spend your 🪙 coins to spin for exclusive rewards.",
             color=0x5865F2
         )
 
@@ -43,7 +43,7 @@ class MainMenu(discord.ui.View):
 
         embed = discord.Embed(
             title="🪙 Economy",
-            description="Choose an option below.",
+            description="Manage your coins and claim daily rewards.",
             color=0x2ECC71
         )
 
@@ -202,7 +202,7 @@ class BalanceMenu(discord.ui.View):
 
         embed = discord.Embed(
             title="🪙 Economy",
-            description="Choose an option below.",
+            description="Manage your coins and claim daily rewards.",
             color=0x2ECC71
         )
 
