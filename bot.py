@@ -20,20 +20,6 @@ coins = load_coins()
 roles_data = load_roles()
 
 # ============================================================
-# DEBUG
-# ============================================================
-
-import os
-
-print("===================================")
-print("WORKING DIRECTORY:")
-print(os.getcwd())
-
-print("\nROLES DATA:")
-print(roles_data)
-print("===================================")
-
-# ============================================================
 # MAIN MENU
 # ============================================================
 
@@ -253,6 +239,29 @@ class BalanceMenu(discord.ui.View):
 # ROLES MENU
 # ============================================================
 
+IGNORED_ROLES = {
+    "@everyone",
+    "Moderator",
+    "Admin",
+    "Owner",
+    "Bots",
+    "Server Booster"
+}
+
+
+def get_user_role(member):
+    """Returns the highest registered role from roles.json."""
+
+    for role in reversed(member.roles):
+        if role.name in IGNORED_ROLES:
+            continue
+
+        if role.name in roles_data:
+            return role
+
+    return None
+
+
 class RolesMenu(discord.ui.View):
 
     @discord.ui.button(
@@ -262,84 +271,7 @@ class RolesMenu(discord.ui.View):
     async def my_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         member = interaction.user
-
-        role_names = [role.name for role in member.roles]
-
-        await interaction.response.send_message(
-            "Your roles are:\n```" + "\n".join(role_names) + "```",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="🔎 Search Role",
-        style=discord.ButtonStyle.success
-    )
-    async def search_role(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "🔎 Search Role coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="📜 Role Hierarchy",
-        style=discord.ButtonStyle.secondary
-    )
-    async def hierarchy(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "📜 Role Hierarchy coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="⬅ Back",
-        style=discord.ButtonStyle.danger
-    )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        embed = discord.Embed(
-            title="Main Menu",
-            description="Choose an option below.",
-            color=0x5865F2
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=MainMenu()
-        )
-        
-# ============================================================
-# MY ROLE MENU
-# ============================================================
-
-class MyRoleMenu(discord.ui.View):
-
-    @discord.ui.button(
-        label="⬅ Back",
-        style=discord.ButtonStyle.danger
-    )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        member = interaction.user
-
-        IGNORED_ROLES = [
-            "Moderator",
-            "Admin",
-            "Owner",
-            "Bots",
-            "Server Booster"
-        ]
-
-        role = None
-
-        for r in reversed(member.roles):
-            if (
-                r.name in roles_data
-                and r.name not in IGNORED_ROLES
-            ):
-                role = r
-                break
+        role = get_user_role(member)
 
         if role is None:
             await interaction.response.send_message(
@@ -348,23 +280,25 @@ class MyRoleMenu(discord.ui.View):
             )
             return
 
-        role_info = roles_data.get(
-            role.name,
-            {
-                "description": "No description has been set.",
-                "promotion_requirements": [],
-                "responsibilities": []
-            }
+        role_info = roles_data.get(role.name)
+
+        description = role_info.get(
+            "description",
+            "No description has been set."
         )
 
-        description = role_info["description"]
-
         promotion = "\n".join(
-            f"• {req}" for req in role_info["promotion_requirements"]
+            f"• {x}" for x in role_info.get(
+                "promotion_requirements",
+                []
+            )
         ) or "None"
 
         responsibilities = "\n".join(
-            f"• {task}" for task in role_info["responsibilities"]
+            f"• {x}" for x in role_info.get(
+                "responsibilities",
+                []
+            )
         ) or "None"
 
         member_count = sum(
@@ -372,13 +306,11 @@ class MyRoleMenu(discord.ui.View):
             if role in m.roles
         )
 
-        permissions = []
-
-        for name, value in role.permissions:
-            if value:
-                permissions.append(
-                    "• " + name.replace("_", " ").title()
-                )
+        permissions = [
+            "• " + name.replace("_", " ").title()
+            for name, value in role.permissions
+            if value
+        ]
 
         permission_text = "\n".join(permissions) or "None"
 
@@ -421,18 +353,34 @@ class MyRoleMenu(discord.ui.View):
             embed=embed,
             view=MyRoleMenu()
         )
-        
-# -----------------------------
-# OPEN MENU BUTTON
-# -----------------------------
-
-class OpenMenu(discord.ui.View):
 
     @discord.ui.button(
-        label="📋 Open Menu",
-        style=discord.ButtonStyle.primary
+        label="🔎 Search Role",
+        style=discord.ButtonStyle.success
     )
-    async def open_menu(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def search_role(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "🔎 Search Role coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="📜 Role Hierarchy",
+        style=discord.ButtonStyle.secondary
+    )
+    async def hierarchy(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "📜 Role Hierarchy coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         embed = discord.Embed(
             title="Main Menu",
@@ -440,12 +388,33 @@ class OpenMenu(discord.ui.View):
             color=0x5865F2
         )
 
-        await interaction.response.send_message(
+        await interaction.response.edit_message(
             embed=embed,
-            view=MainMenu(),
-            ephemeral=True
+            view=MainMenu()
         )
 
+# ============================================================
+# MY ROLE MENU
+# ============================================================
+
+class MyRoleMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="👤 Roles",
+            description="View your role, search for roles, or browse the role hierarchy.",
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RolesMenu()
+        )
 
 # -----------------------------
 # SETUP COMMAND
