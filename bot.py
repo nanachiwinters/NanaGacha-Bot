@@ -126,7 +126,7 @@ class EconomyMenu(discord.ui.View):
 
         await interaction.response.edit_message(
             embed=embed,
-            view=EconomyMenu()
+            view=BalanceMenu()
         )
         
     @discord.ui.button(
