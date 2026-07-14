@@ -105,7 +105,7 @@ class EconomyMenu(discord.ui.View):
     
     @discord.ui.button(
         label="💰 Balance",
-        style=discord.ButtonStyle.secondary,
+        style=discord.ButtonStyle.primary,
         row=0
     )
     async def balance(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -134,7 +134,7 @@ class EconomyMenu(discord.ui.View):
         
     @discord.ui.button(
         label="🎁 Daily",
-        style=discord.ButtonStyle.primary
+        style=discord.ButtonStyle.success
     )
     async def daily(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -162,7 +162,7 @@ class EconomyMenu(discord.ui.View):
 
     @discord.ui.button(
         label="🏆 Leaderboard",
-        style=discord.ButtonStyle.success
+        style=discord.ButtonStyle.secondary
     )
     async def leaderboard(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -173,7 +173,7 @@ class EconomyMenu(discord.ui.View):
 
     @discord.ui.button(
         label="⬅ Back",
-        style=discord.ButtonStyle.secondary
+        style=discord.ButtonStyle.danger
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
