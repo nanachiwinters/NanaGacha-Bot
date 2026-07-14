@@ -13,7 +13,7 @@ coins = load_coins()
 
 
 # -----------------------------
-# PERSONAL MENU
+# Main MENU
 # -----------------------------
 
 class MainMenu(discord.ui.View):
@@ -50,6 +50,23 @@ class MainMenu(discord.ui.View):
         await interaction.response.edit_message(
             embed=embed,
             view=EconomyMenu()
+        )
+        
+    @discord.ui.button(
+        label="👤 Roles",
+        style=discord.ButtonStyle.primary
+    )
+    async def roles(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="👤 Roles",
+            description="View your role, search for roles, or browse the role hierarchy.",
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RolesMenu()
         )
 
 # -----------------------------
@@ -211,6 +228,62 @@ class BalanceMenu(discord.ui.View):
             view=EconomyMenu()
         )
 
+# ============================================================
+# ROLES MENU
+# ============================================================
+
+class RolesMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="👤 My Role",
+        style=discord.ButtonStyle.primary
+    )
+    async def my_role(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "👤 My Role coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="🔎 Search Role",
+        style=discord.ButtonStyle.success
+    )
+    async def search_role(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "🔎 Search Role coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="📜 Role Hierarchy",
+        style=discord.ButtonStyle.secondary
+    )
+    async def hierarchy(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "📜 Role Hierarchy coming soon!",
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="Main Menu",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=MainMenu()
+        )
+        
 # -----------------------------
 # OPEN MENU BUTTON
 # -----------------------------
