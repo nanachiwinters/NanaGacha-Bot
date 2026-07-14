@@ -263,40 +263,11 @@ class RolesMenu(discord.ui.View):
 
         member = interaction.user
 
-        print("\n========== USER ROLES ==========")
-        for r in reversed(member.roles):
-            print(repr(r.name))
+        role_names = [role.name for role in member.roles]
 
-        print("\n========== ROLES.JSON KEYS ==========")
-        for key in roles_data.keys():
-            print(repr(key))
-
-        role = None
-
-        for r in reversed(member.roles):
-            if r.name in roles_data:
-                print(f"\n✅ MATCH FOUND: {repr(r.name)}")
-                role = r
-                break
-
-        if role:
-            role_name = role.name
-        else:
-            print("\n❌ NO MATCH FOUND")
-            role_name = "No Role"
-
-        embed = discord.Embed(
-            title="👤 Your Role",
-            description=(
-                f"**Current Role:** {role_name}\n\n"
-                "Press below to view your role information."
-            ),
-            color=0x9B59B6
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=MyRoleMenu()
+        await interaction.response.send_message(
+            "Your roles are:\n```" + "\n".join(role_names) + "```",
+            ephemeral=True
         )
 
     @discord.ui.button(
