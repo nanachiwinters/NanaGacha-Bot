@@ -247,17 +247,26 @@ class RolesMenu(discord.ui.View):
 
         member = interaction.user
 
+        print("\n========== USER ROLES ==========")
+        for r in reversed(member.roles):
+            print(repr(r.name))
+
+        print("\n========== ROLES.JSON KEYS ==========")
+        for key in roles_data.keys():
+            print(repr(key))
+
         role = None
 
-        # Find highest role that exists in roles_data
         for r in reversed(member.roles):
             if r.name in roles_data:
+                print(f"\n✅ MATCH FOUND: {repr(r.name)}")
                 role = r
                 break
 
         if role:
             role_name = role.name
         else:
+            print("\n❌ NO MATCH FOUND")
             role_name = "No Role"
 
         embed = discord.Embed(
@@ -274,7 +283,6 @@ class RolesMenu(discord.ui.View):
             view=MyRoleMenu()
         )
 
-
     @discord.ui.button(
         label="🔎 Search Role",
         style=discord.ButtonStyle.success
@@ -286,7 +294,6 @@ class RolesMenu(discord.ui.View):
             ephemeral=True
         )
 
-
     @discord.ui.button(
         label="📜 Role Hierarchy",
         style=discord.ButtonStyle.secondary
@@ -297,7 +304,6 @@ class RolesMenu(discord.ui.View):
             "📜 Role Hierarchy coming soon!",
             ephemeral=True
         )
-
 
     @discord.ui.button(
         label="⬅ Back",
