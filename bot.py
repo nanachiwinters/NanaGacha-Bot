@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 
 from config import TOKEN
+from views.main_menu import MainMenu
 from storage import load_coins, save_coins
 
 intents = discord.Intents.default()
