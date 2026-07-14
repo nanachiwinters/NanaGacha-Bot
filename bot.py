@@ -102,16 +102,59 @@ class GachaMenu(discord.ui.View):
 # ============================================================
 
 class EconomyMenu(discord.ui.View):
+    
+    @discord.ui.button(
+        label="💰 Balance",
+        style=discord.ButtonStyle.secondary,
+        row=0
+    )
+    async def balance(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        user_id = str(interaction.user.id)
+
+        if user_id not in coins:
+            coins[user_id] = 0
+            save_coins(coins)
+
+        embed = discord.Embed(
+            title="💰 Your Balance",
+            description=f"You currently have **{coins[user_id]}** 🪙 coin(s).",
+            color=0xFFD700
+        )
+
+        embed.set_footer(text="Nachi Economy")
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=EconomyMenu()
+        )
+        
     @discord.ui.button(
         label="🎁 Daily",
         style=discord.ButtonStyle.primary
     )
     async def daily(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_message(
-            "🎁 Daily coming soon!",
-            ephemeral=True
+        user_id = str(interaction.user.id)
+
+        if user_id not in coins:
+            coins[user_id] = 0
+
+        coins[user_id] += 1
+        save_coins(coins)
+
+        embed = discord.Embed(
+            title="🎁 Daily Reward",
+            description=(
+                "You received **1 coin!**\n\n"
+                f"💰 Balance: **{coins[user_id]}** coin(s)"
+            ),
+            color=0xFFD700
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=EconomyMenu()
         )
 
     @discord.ui.button(
