@@ -502,7 +502,8 @@ class OpenMenu(discord.ui.View):
 
     @discord.ui.button(
         label="📋 Open Menu",
-        style=discord.ButtonStyle.primary
+        style=discord.ButtonStyle.primary,
+        custom_id="open_menu"
     )
     async def open_menu(self, interaction: discord.Interaction, button: discord.ui.Button):
 
@@ -612,7 +613,6 @@ async def setup(interaction: discord.Interaction):
 
 @client.event
 async def on_ready():
-
     client.add_view(OpenMenu())
 
     await tree.sync()
