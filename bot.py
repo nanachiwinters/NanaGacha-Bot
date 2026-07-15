@@ -389,73 +389,53 @@ class SearchRoleModal(discord.ui.Modal, title="Search Role"):
         )
         
 # ============================================================
-# ROLES MENU
+# ROLE HIERARCHY
 # ============================================================
 
-class RolesMenu(discord.ui.View):
+@discord.ui.button(
+    label="📜 Role Hierarchy",
+    style=discord.ButtonStyle.secondary
+)
+async def hierarchy(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-    @discord.ui.button(
-        label="👤 My Role",
-        style=discord.ButtonStyle.primary
+    embed = discord.Embed(
+        title="📜 Hive Hierarchy",
+        description=(
+            "The current rank structure of the hive.\n\n"
+            "👑 Sovereign of Doom\n"
+            "│\n"
+            "▼\n"
+            "🛡️ Herald of Chaos🛡️\n"
+            "│\n"
+            "▼\n"
+            "⚖️ Harbinger of Order⚖️\n"
+            "│\n"
+            "▼\n"
+            "🩸 Minister of Pain🩸\n"
+            "│\n"
+            "▼\n"
+            "🐦‍🔥 War Hawk🐦‍🔥\n"
+            "│\n"
+            "▼\n"
+            "😡 Acolyte of Rage😡"
+        ),
+        color=0x9B59B6
     )
-    async def my_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        role = get_user_role(interaction.user)
-
-        if role is None:
-            await interaction.response.send_message(
-                "❌ You don't have a registered role.",
-                ephemeral=True
-            )
-            return
-
-        embed = build_role_embed(
-            role,
-            interaction.guild
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=MyRoleMenu()
-        )
-
-    @discord.ui.button(
-        label="🔎 Search Role",
-        style=discord.ButtonStyle.success
+    embed.add_field(
+        name="⭐ Promotion Flow",
+        value=(
+            "All new members begin as **Acolyte of Rage**.\n"
+            "Promotions are based on activity, trust, and contribution.\n"
+            "All promotions are decided by the **Sovereign of Doom**."
+        ),
+        inline=False
     )
-    async def search_role(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_modal(
-            SearchRoleModal()
-        )
-
-    @discord.ui.button(
-        label="📜 Role Hierarchy",
-        style=discord.ButtonStyle.secondary
+    await interaction.response.edit_message(
+        embed=embed,
+        view=HierarchyMenu()
     )
-    async def hierarchy(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "📜 Role Hierarchy coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="⬅ Back",
-        style=discord.ButtonStyle.danger
-    )
-    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        embed = discord.Embed(
-            title="Main Menu",
-            description="Choose an option below.",
-            color=0x5865F2
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=MainMenu()
-        )
         
 # -----------------------------
 # OPEN MENU BUTTON
@@ -486,6 +466,29 @@ class OpenMenu(discord.ui.View):
 # ============================================================
 
 class MyRoleMenu(discord.ui.View):
+
+    @discord.ui.button(
+        label="⬅ Back",
+        style=discord.ButtonStyle.danger
+    )
+    async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        embed = discord.Embed(
+            title="👤 Roles",
+            description="View your role, search for roles, or browse the role hierarchy.",
+            color=0x9B59B6
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=RolesMenu()
+        )
+
+# ============================================================
+# HIERARCHY MENU
+# ============================================================
+
+class HierarchyMenu(discord.ui.View):
 
     @discord.ui.button(
         label="⬅ Back",
@@ -554,12 +557,5 @@ async def setup(interaction: discord.Interaction):
 async def on_ready():
     await tree.sync()
     print(f"✅ {client.user} is online!")
-
-client.run(TOKEN)
-@client.event
-async def on_ready():
-    await tree.sync()
-    print(f"✅ {client.user} is online!")
-
 
 client.run(TOKEN)
