@@ -17,6 +17,8 @@ intents.members = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
+setup_admin(tree)
+
 coins = load_coins()
 roles_data = load_roles()
 
