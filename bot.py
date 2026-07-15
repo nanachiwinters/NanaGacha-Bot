@@ -43,7 +43,7 @@ class MainMenu(discord.ui.View):
 
         await interaction.response.edit_message(
             embed=embed,
-            view=GachaMenu()
+            view=GachaMenu(MainMenu())
         )
 
     @discord.ui.button(
