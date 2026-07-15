@@ -19,8 +19,17 @@ class GachaMenu(discord.ui.View):
     )
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        rooms = load_rooms()
+
+        if not rooms:
+            await interaction.response.send_message(
+                "❌ No rooms have been configured.",
+                ephemeral=True
+            )
+            return
+
         await interaction.response.send_message(
-            "🎰 Normal Gacha coming soon!",
+            f"✅ Loaded {len(rooms)} room(s)!",
             ephemeral=True
         )
 
