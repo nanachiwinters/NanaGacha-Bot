@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 
+from admin import setup_admin
 from config import TOKEN
 from storage import (
     load_coins,
