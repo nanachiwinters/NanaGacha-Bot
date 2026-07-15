@@ -1,32 +1,106 @@
 {
     "👑Sovereign of Doom👑": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
+        "description": "The leader of the hive. Oversees all hive operations and makes the final decisions.",
+        "promotion_requirements": [
+            "Server Owner"
+        ],
+        "responsibilities": [
+            "Lead the hive",
+            "Guide the leadership team",
+            "Oversee hive operations",
+            "Make final decisions"
+        ],
+        "hive_permissions": [
+            "Full authority over the hive"
+        ]
     },
+
     "🛡️Herald of Chaos🛡️": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
+        "description": "The second-in-command of the hive. Supports the Sovereign of Doom and helps oversee the hive's operations.",
+        "promotion_requirements": [
+            "Follow the server rules",
+            "Remain consistently active",
+            "Earn the trust of the Sovereign of Doom"
+        ],
+        "responsibilities": [
+            "Support the Sovereign of Doom",
+            "Oversee the hive when the Sovereign of Doom is unavailable",
+            "Manage and improve the hive's Discord",
+            "Develop systems to improve the member experience",
+            "Help members"
+        ],
+        "hive_permissions": [
+            "Recruit members"
+        ]
     },
+
     "⚖️Harbinger of Order⚖️": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
+        "description": "A senior leader responsible for supporting the hive and ensuring operations continue smoothly.",
+        "promotion_requirements": [
+            "Follow the server rules",
+            "Remain consistently active",
+            "Earn the trust of the leadership team"
+        ],
+        "responsibilities": [
+            "Support the leadership team",
+            "Assist new and existing members",
+            "Stay up to date with game information and updates",
+            "Help oversee the hive when needed"
+        ],
+        "hive_permissions": [
+            "Recruit members"
+        ]
     },
-    "🐦‍🔥War Hawk🐦‍🔥": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
-    },
+
     "🩸Minister of Pain🩸": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
+        "description": "A senior member responsible for supervising lower-ranking members and helping maintain an active and organized hive.",
+        "promotion_requirements": [
+            "Follow the server rules",
+            "Remain consistently active",
+            "Demonstrate maturity and responsibility"
+        ],
+        "responsibilities": [
+            "Oversee lower-ranking members",
+            "Monitor member activity",
+            "Help enforce hive guidelines",
+            "Support the leadership team"
+        ],
+        "hive_permissions": [
+            "Recruit members"
+        ]
     },
+
+    "🐦‍🔥War Hawk🐦‍🔥": {
+        "description": "An experienced member dedicated to growing the hive and keeping the community active and engaged.",
+        "promotion_requirements": [
+            "Follow the server rules",
+            "Remain consistently active",
+            "Show initiative within the hive"
+        ],
+        "responsibilities": [
+            "Recruit new members",
+            "Organize hive activities",
+            "Suggest new activity ideas",
+            "Help members"
+        ],
+        "hive_permissions": [
+            "Recruit members"
+        ]
+    },
+
     "😡Acolyte of Rage😡": {
-        "description": "",
-        "promotion_requirements": [],
-        "responsibilities": []
+        "description": "The entry rank for all new recruits. Acolytes are expected to learn the hive's rules, remain active, and demonstrate their commitment before advancing.",
+        "promotion_requirements": [
+            "Follow the server rules",
+            "Remain fairly active",
+            "Do not be inactive for more than 3 days without notice"
+        ],
+        "responsibilities": [
+            "Learn the hive's rules",
+            "Participate in hive activities",
+            "Support fellow members",
+            "Build trust within the hive"
+        ],
+        "hive_permissions": []
     }
 }
