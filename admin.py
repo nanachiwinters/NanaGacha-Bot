@@ -9,4 +9,8 @@ def setup_admin(tree):
     )
     @app_commands.default_permissions(administrator=True)
     async def admin(interaction: discord.Interaction):
-        ...
+
+        await interaction.response.send_message(
+            "⚙️ Admin panel coming soon!",
+            ephemeral=True
+        )
