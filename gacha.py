@@ -12,47 +12,40 @@ def setup_gacha():
 class GachaMenu(discord.ui.View):
 
     @discord.ui.button(
-        label="🎲 Normal Spin",
+        label="Normal Spin",
         style=discord.ButtonStyle.primary
     )
-    async def normal_spin(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "🎲 Normal Spin coming soon!",
+            "🎰 Normal Gacha coming soon!",
             ephemeral=True
         )
 
     @discord.ui.button(
-        label="✨ Lucky Spin",
+        label="Lucky Spin",
         style=discord.ButtonStyle.success
     )
-    async def lucky_spin(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "✨ Lucky Spin coming soon!",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="📊 Odds",
-        style=discord.ButtonStyle.secondary
-    )
-    async def odds(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message(
-            "📊 Odds coming soon!",
+            "🍀 Lucky Gacha coming soon!",
             ephemeral=True
         )
 
     @discord.ui.button(
         label="⬅ Back",
-        style=discord.ButtonStyle.danger
+        style=discord.ButtonStyle.secondary
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        # We'll hook this back into MainMenu later.
+        embed = discord.Embed(
+            title="Main Menu",
+            description="Choose an option below.",
+            color=0x5865F2
+        )
+
         await interaction.response.edit_message(
-            content="Back button coming soon.",
-            embed=None,
-            view=None
+            embed=embed,
+            view=MainMenu()
         )
