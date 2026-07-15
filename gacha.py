@@ -1,10 +1,5 @@
 import discord
 
-
-def setup_gacha():
-    pass
-
-
 # ============================================================
 # GACHA MENU
 # ============================================================
@@ -39,13 +34,7 @@ class GachaMenu(discord.ui.View):
     )
     async def back(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        embed = discord.Embed(
-            title="Main Menu",
-            description="Choose an option below.",
-            color=0x5865F2
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=MainMenu()
+        await interaction.response.send_message(
+            "⬅ Back coming soon.",
+            ephemeral=True
         )
