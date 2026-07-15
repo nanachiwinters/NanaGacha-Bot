@@ -1,4 +1,7 @@
 import discord
+import random
+
+from storage import load_rooms, save_rooms
 
 # ============================================================
 # GACHA MENU
