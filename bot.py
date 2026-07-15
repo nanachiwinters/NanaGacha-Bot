@@ -497,6 +497,9 @@ class RolesMenu(discord.ui.View):
 
 class OpenMenu(discord.ui.View):
 
+    def __init__(self):
+        super().__init__(timeout=None)
+
     @discord.ui.button(
         label="📋 Open Menu",
         style=discord.ButtonStyle.primary
@@ -609,6 +612,9 @@ async def setup(interaction: discord.Interaction):
 
 @client.event
 async def on_ready():
+
+    client.add_view(OpenMenu())
+
     await tree.sync()
     print(f"✅ {client.user} is online!")
 
