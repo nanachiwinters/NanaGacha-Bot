@@ -4,23 +4,5 @@
         "rarity": "Common",
         "weight": 60,
         "lucky": false
-    },
-    "Room 2": {
-        "code": "",
-        "rarity": "Rare",
-        "weight": 25,
-        "lucky": false
-    },
-    "Room 3": {
-        "code": "",
-        "rarity": "Epic",
-        "weight": 10,
-        "lucky": false
-    },
-    "Room 4": {
-        "code": "",
-        "rarity": "Legendary",
-        "weight": 5,
-        "lucky": true
     }
 }
