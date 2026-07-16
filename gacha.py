@@ -181,3 +181,103 @@ class GachaMenu(discord.ui.View):
             embed=embed,
             view=self.main_menu
         )
+        
+# ============================================================
+# UPGRADE VIEW
+# PART 3A
+#
+# REPLACE THE BEGINNING OF UpgradeView
+# THROUGH THE END OF embed()
+# ============================================================
+
+class UpgradeView(discord.ui.View):
+
+    def __init__(self, main_menu):
+
+        super().__init__(timeout=None)
+
+        self.main_menu = main_menu
+
+        self.revealed = False
+
+        self.power = 0
+
+        self.current_level = 0
+
+        self.upgrades_used = 0
+
+    def stars(self):
+
+        return "☆" * self.upgrades_used + "★" * (3 - self.upgrades_used)
+
+    def power_bar(self):
+
+        bars = 10
+
+        filled = int((self.power / MAX_POWER) * bars)
+
+        if filled > bars:
+            filled = bars
+
+        return "█" * filled + "░" * (bars - filled)
+
+    def update_rarity(self):
+
+        if self.power >= LEGENDARY_THRESHOLD:
+            self.current_level = 3
+
+        elif self.power >= EPIC_THRESHOLD:
+            self.current_level = 2
+
+        elif self.power >= COMMON_THRESHOLD:
+            self.current_level = 1
+
+        else:
+            self.current_level = 0
+
+    def embed(self, status=None):
+
+        embed = discord.Embed(
+            title="🎁 Mystery Room",
+            color=0x5865F2
+        )
+
+        if not self.revealed:
+
+            embed.description = (
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                "Press **Reveal** to begin\n"
+                "charging the reactor.\n\n"
+                "Current Rarity\n"
+                "❔ ???\n\n"
+                "Reactor Charge\n"
+                "░░░░░░░░░░"
+            )
+
+            return embed
+
+        rarity = LEVEL_TO_RARITY[self.current_level]
+
+        emoji = RARITY_EMOJIS[rarity]
+
+        description = (
+            "━━━━━━━━━━━━━━━━━━\n\n"
+        )
+
+        if status:
+
+            description += status + "\n\n"
+
+        description += (
+            "Current Rarity\n"
+            f"{emoji} {rarity}\n\n"
+            "Reactor Charge\n"
+            f"{self.power_bar()}\n\n"
+            "Upgrades Remaining\n"
+            f"{self.stars()}"
+        )
+
+        embed.description = description
+
+        return embed
+
