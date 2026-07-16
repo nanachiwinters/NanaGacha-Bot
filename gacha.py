@@ -172,3 +172,30 @@ class GachaMenu(discord.ui.View):
             embed=embed,
             view=self.main_menu
         )
+
+# ============================================================
+# UPGRADE VIEW
+# ============================================================
+
+class UpgradeView(discord.ui.View):
+
+    def __init__(self, reward, main_menu):
+
+        super().__init__()
+
+        self.reward = reward
+        self.main_menu = main_menu
+
+        self.current_level = 0
+        self.upgrades_used = 0
+
+    @discord.ui.button(
+        label="⚡ Upgrade",
+        style=discord.ButtonStyle.primary
+    )
+    async def upgrade(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "⚡ Upgrade system coming next!",
+            ephemeral=True
+        )
