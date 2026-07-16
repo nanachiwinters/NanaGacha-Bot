@@ -4,6 +4,35 @@ import random
 from storage import load_rooms, save_rooms
 
 # ============================================================
+# GACHA HELPERS
+# ============================================================
+
+def roll_normal_room():
+
+    rooms = load_rooms()
+
+    normal_rooms = []
+    weights = []
+
+    for room_name, room in rooms.items():
+
+        if room.get("lucky", False):
+            continue
+
+        normal_rooms.append((room_name, room))
+        weights.append(room.get("weight", 1))
+
+    if not normal_rooms:
+        return None
+
+    return random.choices(
+        normal_rooms,
+        weights=weights,
+        k=1
+    )[0]
+
+
+# ============================================================
 # GACHA MENU
 # ============================================================
 
