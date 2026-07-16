@@ -1,7 +1,11 @@
 import discord
 import random
+import asyncio
 
-from storage import load_rooms, save_rooms
+from storage import (
+    load_rooms,
+    save_rooms
+)
 
 # ============================================================
 # RARITIES
@@ -21,31 +25,53 @@ LEVEL_TO_RARITY = {
     3: "Legendary"
 }
 
+RARITY_EMOJIS = {
+    "Common": "🟢",
+    "Rare": "🔵",
+    "Epic": "🟣",
+    "Legendary": "👑"
+}
 
 # ============================================================
-# ROOM ROLL
+# REACTOR
 # ============================================================
 
-def roll_room(lucky=False):
+MAX_POWER = 120
+
+COMMON_THRESHOLD = 40
+EPIC_THRESHOLD = 80
+LEGENDARY_THRESHOLD = 120
+
+# Every upgrade adds a random amount of power.
+POWER_GAIN = (
+    20,
+    45
+)
+
+# ============================================================
+# ROOM HELPERS
+# ============================================================
+
+def roll_room_from_rarity(rarity):
 
     rooms = load_rooms()
 
     available = []
+    weights = []
 
     for room_name, room in rooms.items():
 
         if room.get("used", False):
             continue
 
-        if lucky and not room.get("lucky", False):
+        if room.get("rarity") != rarity:
             continue
 
         available.append((room_name, room))
+        weights.append(room.get("weight", 1))
 
     if not available:
         return None
-
-    weights = [room["weight"] for _, room in available]
 
     room_name, room = random.choices(
         available,
@@ -58,34 +84,17 @@ def roll_room(lucky=False):
         "code": room["code"],
         "rarity": room["rarity"]
     }
-    
-# ============================================================
-# GACHA HELPERS
-# ============================================================
 
-def roll_normal_room():
+
+def claim_room(room_name):
 
     rooms = load_rooms()
 
-    normal_rooms = []
-    weights = []
+    if room_name in rooms:
 
-    for room_name, room in rooms.items():
+        rooms[room_name]["used"] = True
 
-        if room.get("lucky", False):
-            continue
-
-        normal_rooms.append((room_name, room))
-        weights.append(room.get("weight", 1))
-
-    if not normal_rooms:
-        return None
-
-    return random.choices(
-        normal_rooms,
-        weights=weights,
-        k=1
-    )[0]
+        save_rooms(rooms)
 
 # ============================================================
 # GACHA MENU
@@ -94,7 +103,7 @@ def roll_normal_room():
 class GachaMenu(discord.ui.View):
 
     def __init__(self, main_menu):
-        super().__init__()
+        super().__init__(timeout=None)
         self.main_menu = main_menu
 
     @discord.ui.button(
@@ -103,16 +112,6 @@ class GachaMenu(discord.ui.View):
     )
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        reward = roll_room()
-
-        if reward is None:
-
-            await interaction.response.send_message(
-                "❌ There are no available rooms.",
-                ephemeral=True
-            )
-            return
-
         embed = discord.Embed(
             title="🎁 Mystery Room",
             color=0x5865F2
@@ -120,18 +119,17 @@ class GachaMenu(discord.ui.View):
 
         embed.description = (
             "━━━━━━━━━━━━━━━━━━\n\n"
+            "Press **Reveal** to begin\n"
+            "charging the reactor.\n\n"
             "Current Rarity\n"
             "❔ ???\n\n"
-            "Upgrades Remaining\n"
-            "★★★"
+            "Reactor Charge\n"
+            "░░░░░░░░░░"
         )
 
         await interaction.response.edit_message(
             embed=embed,
-            view=UpgradeView(
-                reward,
-                self.main_menu
-            )
+            view=UpgradeView(self.main_menu)
         )
 
     @discord.ui.button(
@@ -141,7 +139,7 @@ class GachaMenu(discord.ui.View):
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "🍀 Lucky Spin coming soon!",
+            "🍀 Lucky Reactor coming soon!",
             ephemeral=True
         )
 
@@ -151,8 +149,19 @@ class GachaMenu(discord.ui.View):
     )
     async def odds(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        embed = discord.Embed(
+            title="📊 Reactor Odds",
+            color=0x5865F2
+        )
+
+        embed.description = (
+            "Upgrade Chances are determined\n"
+            "by Reactor Power.\n\n"
+            "⚡ More details coming soon!"
+        )
+
         await interaction.response.send_message(
-            "📊 Odds coming soon!",
+            embed=embed,
             ephemeral=True
         )
 
@@ -171,110 +180,4 @@ class GachaMenu(discord.ui.View):
         await interaction.response.edit_message(
             embed=embed,
             view=self.main_menu
-        )
-
-# ============================================================
-# UPGRADE VIEW
-# ============================================================
-
-class UpgradeView(discord.ui.View):
-
-    def __init__(self, reward, main_menu):
-
-        super().__init__(timeout=None)
-
-        self.reward = reward
-        self.main_menu = main_menu
-
-        self.final_level = RARITY_LEVELS[reward["rarity"]]
-
-        self.current_level = 0
-
-        self.revealed = False
-
-        self.upgrades_used = 0
-
-    def stars(self):
-        return "☆" * self.upgrades_used + "★" * (3 - self.upgrades_used)
-
-    def embed(self):
-
-        embed = discord.Embed(
-            title="🎁 Mystery Room",
-            color=0x5865F2
-        )
-
-        if not self.revealed:
-
-            embed.description = (
-                "━━━━━━━━━━━━━━━━━━\n\n"
-                "Press **Reveal** to discover\n"
-                "your starting rarity."
-            )
-
-        else:
-
-            rarity = LEVEL_TO_RARITY[self.current_level]
-
-            emoji = {
-                "Common": "🟢",
-                "Rare": "🔵",
-                "Epic": "🟣",
-                "Legendary": "👑"
-            }[rarity]
-
-            embed.description = (
-                "━━━━━━━━━━━━━━━━━━\n\n"
-                f"Current Rarity\n"
-                f"{emoji} {rarity}\n\n"
-                f"Upgrades Remaining\n"
-                f"{self.stars()}"
-            )
-
-        return embed
-
-    @discord.ui.button(
-        label="🔍 Reveal",
-        style=discord.ButtonStyle.success
-    )
-    async def reveal(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        self.revealed = True
-        self.current_level = 0
-
-        # Disable Reveal
-        button.disabled = True
-
-        # Enable Upgrade
-        self.children[1].disabled = False
-
-        await interaction.response.edit_message(
-            embed=self.embed(),
-            view=self
-        )
-        
-    @discord.ui.button(
-        label="⚡ Upgrade",
-        style=discord.ButtonStyle.primary,
-        disabled=True
-    )
-    async def upgrade(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        # Use one upgrade
-        self.upgrades_used += 1
-
-        # Increase rarity if we haven't reached the final one
-        if (
-            self.current_level < self.final_level
-            and self.current_level < 3
-        ):
-            self.current_level += 1
-
-        # After 3 upgrades, disable the button
-        if self.upgrades_used >= 3:
-            button.disabled = True
-
-        await interaction.response.edit_message(
-            embed=self.embed(),
-            view=self
         )
