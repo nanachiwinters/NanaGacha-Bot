@@ -344,6 +344,11 @@ class UpgradeView(discord.ui.View):
 
         self.update_rarity()
         
+        if self.current_level > old_level:
+            status = "✨ **POWER SURGED!**"
+        else:
+            status = "⚠ **REACTOR STABILIZED**"
+        
         if self.upgrades_used < 3:
 
             button.disabled = False
