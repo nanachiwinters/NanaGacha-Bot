@@ -87,7 +87,6 @@ def roll_normal_room():
         k=1
     )[0]
 
-
 # ============================================================
 # GACHA MENU
 # ============================================================
@@ -104,32 +103,35 @@ class GachaMenu(discord.ui.View):
     )
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        room = roll_normal_room()
+        reward = roll_room()
 
-        if room is None:
+        if reward is None:
+
             await interaction.response.send_message(
-                "❌ There are no available normal rooms.",
+                "❌ There are no available rooms.",
                 ephemeral=True
             )
             return
 
-        room_name, room_data = room
-
         embed = discord.Embed(
-            title="🎉 You Won!",
-            description=f"You rolled **{room_name}**!",
-            color=0x2ECC71
+            title="🎁 Mystery Room",
+            color=0x5865F2
         )
 
-        embed.add_field(
-            name="⭐ Rarity",
-            value=room_data.get("rarity", "Unknown"),
-            inline=True
+        embed.description = (
+            "━━━━━━━━━━━━━━━━━━\n\n"
+            "Current Rarity\n"
+            "❔ ???\n\n"
+            "Upgrades Remaining\n"
+            "★★★"
         )
 
-        await interaction.response.send_message(
+        await interaction.response.edit_message(
             embed=embed,
-            ephemeral=True
+            view=UpgradeView(
+                reward,
+                self.main_menu
+            )
         )
 
     @discord.ui.button(
@@ -139,7 +141,7 @@ class GachaMenu(discord.ui.View):
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "🍀 Lucky Spin is coming soon!",
+            "🍀 Lucky Spin coming soon!",
             ephemeral=True
         )
 
@@ -149,17 +151,8 @@ class GachaMenu(discord.ui.View):
     )
     async def odds(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        embed = discord.Embed(
-            title="📊 Gacha Odds",
-            description=(
-                "Current drop chances are determined by each room's weight.\n\n"
-                "These values are configurable through the Admin Panel."
-            ),
-            color=0x5865F2
-        )
-
         await interaction.response.send_message(
-            embed=embed,
+            "📊 Odds coming soon!",
             ephemeral=True
         )
 
