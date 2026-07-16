@@ -1,8 +1,33 @@
 {
     "Room 1": {
-        "code": "",
+        "code": "ABC123",
         "rarity": "Common",
-        "weight": 60,
-        "lucky": false
+        "weight": 50,
+        "lucky": false,
+        "used": false
+    },
+
+    "Room 2": {
+        "code": "XYZ987",
+        "rarity": "Rare",
+        "weight": 30,
+        "lucky": false,
+        "used": false
+    },
+
+    "Room 3": {
+        "code": "HELLO1",
+        "rarity": "Epic",
+        "weight": 15,
+        "lucky": true,
+        "used": false
+    },
+
+    "Room 4": {
+        "code": "WORLD2",
+        "rarity": "Legendary",
+        "weight": 5,
+        "lucky": true,
+        "used": false
     }
 }
