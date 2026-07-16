@@ -280,4 +280,80 @@ class UpgradeView(discord.ui.View):
         embed.description = description
 
         return embed
+        
+    @discord.ui.button(
+        label="🔍 Reveal",
+        style=discord.ButtonStyle.success
+    )
+    async def reveal(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        self.revealed = True
+
+        button.disabled = True
+
+        self.children[1].disabled = False
+
+        await interaction.response.edit_message(
+            embed=self.embed(),
+            view=self
+        )
+
+    @discord.ui.button(
+        label="⚡ Upgrade",
+        style=discord.ButtonStyle.primary,
+        disabled=True
+    )
+    async def upgrade(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        if self.upgrades_used >= 3:
+            return
+
+        self.upgrades_used += 1
+
+        button.disabled = True
+
+        await interaction.response.edit_message(
+            embed=self.embed("⚡ Charging."),
+            view=self
+        )
+
+        await asyncio.sleep(0.5)
+
+        await interaction.edit_original_response(
+            embed=self.embed("⚡⚡ Charging.."),
+            view=self
+        )
+
+        await asyncio.sleep(0.5)
+
+        await interaction.edit_original_response(
+            embed=self.embed("⚡⚡⚡ Charging..."),
+            view=self
+        )
+
+        await asyncio.sleep(0.7)
+
+        gain = random.randint(*POWER_GAIN)
+
+        old_level = self.current_level
+
+        self.power += gain
+
+        if self.power > MAX_POWER:
+            self.power = MAX_POWER
+
+        self.update_rarity()
+
+        if self.current_level > old_level:
+            status = "✨ **POWER SURGED!**"
+        else:
+            status = "⚠ **REACTOR STABILIZED**"
+
+        if self.upgrades_used < 3:
+            button.disabled = False
+
+        await interaction.edit_original_response(
+            embed=self.embed(status),
+            view=self
+        )
 
