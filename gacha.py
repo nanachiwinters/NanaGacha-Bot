@@ -343,17 +343,60 @@ class UpgradeView(discord.ui.View):
             self.power = MAX_POWER
 
         self.update_rarity()
-
-        if self.current_level > old_level:
-            status = "✨ **POWER SURGED!**"
-        else:
-            status = "⚠ **REACTOR STABILIZED**"
-
+        
         if self.upgrades_used < 3:
+
             button.disabled = False
 
-        await interaction.edit_original_response(
-            embed=self.embed(status),
-            view=self
-        )
+            await interaction.edit_original_response(
+                embed=self.embed(status),
+                view=self
+            )
 
+        else:
+
+            rarity = LEVEL_TO_RARITY[self.current_level]
+
+            reward = roll_room_from_rarity(rarity)
+
+            if reward is None:
+
+                embed = discord.Embed(
+                    title="❌ No Rooms Left",
+                    description=f"There are no unused **{rarity}** rooms remaining.",
+                    color=discord.Color.red()
+                )
+
+                await interaction.edit_original_response(
+                    embed=embed,
+                    view=None
+                )
+
+                return
+
+            claim_room(reward["name"])
+
+            emoji = RARITY_EMOJIS[rarity]
+
+            if rarity == "Legendary":
+                color = discord.Color.gold()
+            else:
+                color = discord.Color.blurple()
+
+            embed = discord.Embed(
+                title="🎉 ROOM ACQUIRED",
+                color=color
+            )
+
+            embed.description = (
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                f"{emoji} **{rarity}**\n\n"
+                f"🏠 **{reward['name']}**\n\n"
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                f"🔑 **{reward['code']}**"
+            )
+
+            await interaction.edit_original_response(
+                embed=embed,
+                view=None
+            )
