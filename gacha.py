@@ -48,17 +48,31 @@ class GachaMenu(discord.ui.View):
     )
     async def normal(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        rooms = load_rooms()
+        room = roll_normal_room()
 
-        if not rooms:
+        if room is None:
             await interaction.response.send_message(
-                "❌ No rooms have been configured.",
+                "❌ There are no available normal rooms.",
                 ephemeral=True
             )
             return
 
+        room_name, room_data = room
+
+        embed = discord.Embed(
+            title="🎉 You Won!",
+            description=f"You rolled **{room_name}**!",
+            color=0x2ECC71
+        )
+
+        embed.add_field(
+            name="⭐ Rarity",
+            value=room_data.get("rarity", "Unknown"),
+            inline=True
+        )
+
         await interaction.response.send_message(
-            f"✅ Loaded {len(rooms)} room(s)!",
+            embed=embed,
             ephemeral=True
         )
 
@@ -69,7 +83,7 @@ class GachaMenu(discord.ui.View):
     async def lucky(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "🍀 Lucky Gacha coming soon!",
+            "🍀 Lucky Spin is coming soon!",
             ephemeral=True
         )
 
@@ -79,8 +93,17 @@ class GachaMenu(discord.ui.View):
     )
     async def odds(self, interaction: discord.Interaction, button: discord.ui.Button):
 
+        embed = discord.Embed(
+            title="📊 Gacha Odds",
+            description=(
+                "Current drop chances are determined by each room's weight.\n\n"
+                "These values are configurable through the Admin Panel."
+            ),
+            color=0x5865F2
+        )
+
         await interaction.response.send_message(
-            "📊 Odds coming soon!",
+            embed=embed,
             ephemeral=True
         )
 
