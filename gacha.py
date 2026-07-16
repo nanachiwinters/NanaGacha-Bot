@@ -4,6 +4,62 @@ import random
 from storage import load_rooms, save_rooms
 
 # ============================================================
+# RARITIES
+# ============================================================
+
+RARITY_LEVELS = {
+    "Common": 0,
+    "Rare": 1,
+    "Epic": 2,
+    "Legendary": 3
+}
+
+LEVEL_TO_RARITY = {
+    0: "Common",
+    1: "Rare",
+    2: "Epic",
+    3: "Legendary"
+}
+
+
+# ============================================================
+# ROOM ROLL
+# ============================================================
+
+def roll_room(lucky=False):
+
+    rooms = load_rooms()
+
+    available = []
+
+    for room_name, room in rooms.items():
+
+        if room.get("used", False):
+            continue
+
+        if lucky and not room.get("lucky", False):
+            continue
+
+        available.append((room_name, room))
+
+    if not available:
+        return None
+
+    weights = [room["weight"] for _, room in available]
+
+    room_name, room = random.choices(
+        available,
+        weights=weights,
+        k=1
+    )[0]
+
+    return {
+        "name": room_name,
+        "code": room["code"],
+        "rarity": room["rarity"]
+    }
+    
+# ============================================================
 # GACHA HELPERS
 # ============================================================
 
