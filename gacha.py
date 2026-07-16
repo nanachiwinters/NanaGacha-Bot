@@ -181,21 +181,86 @@ class UpgradeView(discord.ui.View):
 
     def __init__(self, reward, main_menu):
 
-        super().__init__()
+        super().__init__(timeout=None)
 
         self.reward = reward
         self.main_menu = main_menu
 
+        self.final_level = RARITY_LEVELS[reward["rarity"]]
+
         self.current_level = 0
+
+        self.revealed = False
+
         self.upgrades_used = 0
+
+    def stars(self):
+        return "☆" * self.upgrades_used + "★" * (3 - self.upgrades_used)
+
+    def embed(self):
+
+        embed = discord.Embed(
+            title="🎁 Mystery Room",
+            color=0x5865F2
+        )
+
+        if not self.revealed:
+
+            embed.description = (
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                "Press **Reveal** to discover\n"
+                "your starting rarity."
+            )
+
+        else:
+
+            rarity = LEVEL_TO_RARITY[self.current_level]
+
+            emoji = {
+                "Common": "🟢",
+                "Rare": "🔵",
+                "Epic": "🟣",
+                "Legendary": "👑"
+            }[rarity]
+
+            embed.description = (
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                f"Current Rarity\n"
+                f"{emoji} {rarity}\n\n"
+                f"Upgrades Remaining\n"
+                f"{self.stars()}"
+            )
+
+        return embed
+
+    @discord.ui.button(
+        label="🔍 Reveal",
+        style=discord.ButtonStyle.success
+    )
+    async def reveal(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        self.revealed = True
+        self.current_level = 0
+
+        # Disable Reveal
+        button.disabled = True
+
+        # Enable Upgrade
+        self.children[1].disabled = False
+
+        await interaction.response.edit_message(
+            embed=self.embed(),
+            view=self
+        )
 
     @discord.ui.button(
         label="⚡ Upgrade",
-        style=discord.ButtonStyle.primary
+        style=discord.ButtonStyle.primary,
+        disabled=True
     )
     async def upgrade(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message(
-            "⚡ Upgrade system coming next!",
+            "⚡ Upgrade animation coming next!",
             ephemeral=True
         )
