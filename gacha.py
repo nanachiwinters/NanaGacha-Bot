@@ -252,7 +252,7 @@ class UpgradeView(discord.ui.View):
             embed=self.embed(),
             view=self
         )
-
+        
     @discord.ui.button(
         label="⚡ Upgrade",
         style=discord.ButtonStyle.primary,
@@ -260,7 +260,21 @@ class UpgradeView(discord.ui.View):
     )
     async def upgrade(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        await interaction.response.send_message(
-            "⚡ Upgrade animation coming next!",
-            ephemeral=True
+        # Use one upgrade
+        self.upgrades_used += 1
+
+        # Increase rarity if we haven't reached the final one
+        if (
+            self.current_level < self.final_level
+            and self.current_level < 3
+        ):
+            self.current_level += 1
+
+        # After 3 upgrades, disable the button
+        if self.upgrades_used >= 3:
+            button.disabled = True
+
+        await interaction.response.edit_message(
+            embed=self.embed(),
+            view=self
         )
